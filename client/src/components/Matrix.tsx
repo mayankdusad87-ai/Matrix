@@ -8,11 +8,7 @@ interface Props {
   onImportanceChange: (task: Task, newImportance: number) => void;
 }
 
-const TIMELINE_THRESHOLD = 70;
-
-function formatDate(d: Date) {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+const URGENCY_DIVIDER = 70;
 
 function computeOffsets(tasks: Task[]): Map<number, { dx: number; dy: number }> {
   const CELL = 10;
@@ -61,25 +57,26 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
 
   const offsets = useMemo(() => computeOffsets(tasks), [tasks]);
 
-  const timelineDates = useMemo(() => {
-    if (tasks.length === 0) return [];
-    const allDates = tasks.flatMap(t => [new Date(t.startDate), new Date(t.dueDate)]);
-    const min = new Date(Math.min(...allDates.map(d => d.getTime())));
-    const max = new Date(Math.max(...allDates.map(d => d.getTime())));
-    const range = max.getTime() - min.getTime();
-
-    const pcts = [0, 25, 50, TIMELINE_THRESHOLD, 100];
-    return pcts.map(pct => {
-      const date = new Date(min.getTime() + (pct / 100) * range);
-      const isToday = Math.abs(date.getTime() - Date.now()) < 86400000;
-      return { pct, label: formatDate(date), isToday };
-    });
+  const maxDaysLeft = useMemo(() => {
+    if (tasks.length === 0) return 30;
+    return Math.max(...tasks.map(t => t.daysRemaining), 7);
   }, [tasks]);
+
+  const xLabels = useMemo(() => {
+    const midDays = Math.round((maxDaysLeft + 7) / 2);
+    return [
+      { pct: 0, label: `${maxDaysLeft}d` },
+      { pct: Math.round((1 - (midDays - 7) / Math.max(maxDaysLeft - 7, 1)) * 70), label: `${midDays}d` },
+      { pct: URGENCY_DIVIDER, label: '7d' },
+      { pct: 85, label: '3d' },
+      { pct: 100, label: 'Due' },
+    ];
+  }, [maxDaysLeft]);
 
   const impH = `${100 - median}%`;
   const impL = `${median}%`;
-  const tlW = `${100 - TIMELINE_THRESHOLD}%`;
-  const tlL = `${TIMELINE_THRESHOLD}%`;
+  const urgW = `${100 - URGENCY_DIVIDER}%`;
+  const notUrgW = `${URGENCY_DIVIDER}%`;
 
   return (
     <div className="flex-1 flex justify-center px-3 py-1 min-h-0">
@@ -98,10 +95,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
           className="relative flex-1 border-2 border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-900"
         >
           {/* Quadrant backgrounds */}
-          <div className="absolute top-0 right-0 bg-red-100/80 dark:bg-red-900/20 pointer-events-none" style={{ width: tlW, height: impH }} />
-          <div className="absolute top-0 left-0 bg-blue-100/60 dark:bg-blue-900/15 pointer-events-none" style={{ width: tlL, height: impH }} />
-          <div className="absolute bottom-0 right-0 bg-amber-100/60 dark:bg-amber-900/15 pointer-events-none" style={{ width: tlW, height: impL }} />
-          <div className="absolute bottom-0 left-0 bg-gray-100/60 dark:bg-gray-800/20 pointer-events-none" style={{ width: tlL, height: impL }} />
+          <div className="absolute top-0 right-0 bg-red-100/80 dark:bg-red-900/20 pointer-events-none" style={{ width: urgW, height: impH }} />
+          <div className="absolute top-0 left-0 bg-blue-100/60 dark:bg-blue-900/15 pointer-events-none" style={{ width: notUrgW, height: impH }} />
+          <div className="absolute bottom-0 right-0 bg-amber-100/60 dark:bg-amber-900/15 pointer-events-none" style={{ width: urgW, height: impL }} />
+          <div className="absolute bottom-0 left-0 bg-gray-100/60 dark:bg-gray-800/20 pointer-events-none" style={{ width: notUrgW, height: impL }} />
 
           {/* Grid lines - horizontal */}
           {yLabels.map(v => (
@@ -122,49 +119,35 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
           </div>
 
           {/* Grid lines - vertical */}
-          {timelineDates.map(({ pct }) => (
+          {xLabels.map(({ pct }) => (
             <div
               key={`v-${pct}`}
               className={`absolute top-0 bottom-0 border-l ${
-                pct === TIMELINE_THRESHOLD ? 'border-2 border-dashed border-indigo-400 dark:border-indigo-500 z-[5]' : 'border-gray-200 dark:border-gray-800'
+                pct === URGENCY_DIVIDER ? 'border-2 border-dashed border-indigo-400 dark:border-indigo-500 z-[5]' : 'border-gray-200 dark:border-gray-800'
               }`}
               style={{ left: `${pct}%` }}
             />
           ))}
 
-          {/* Today marker */}
-          {tasks.length > 0 && (() => {
-            const allDates = tasks.flatMap(t => [new Date(t.startDate), new Date(t.dueDate)]);
-            const min = Math.min(...allDates.map(d => d.getTime()));
-            const max = Math.max(...allDates.map(d => d.getTime()));
-            const range = max - min;
-            if (range <= 0) return null;
-            const todayPct = ((Date.now() - min) / range) * 100;
-            if (todayPct < 0 || todayPct > 100) return null;
-            return (
-              <div
-                className="absolute top-0 bottom-0 border-l-2 border-emerald-500 z-[6] pointer-events-none"
-                style={{ left: `${todayPct}%` }}
-              >
-                <span className="absolute -top-0 left-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-900 px-1 rounded">
-                  TODAY
-                </span>
-              </div>
-            );
-          })()}
+          {/* 7-day threshold label */}
+          <div className="absolute bottom-1 z-[6] pointer-events-none" style={{ left: `${URGENCY_DIVIDER}%` }}>
+            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-900 px-1 rounded translate-x-1 inline-block">
+              7 days
+            </span>
+          </div>
 
           {/* Quadrant labels */}
           <div className="absolute inset-0 pointer-events-none select-none z-0">
-            <div className="absolute flex items-center justify-center" style={{ top: 0, right: 0, width: tlW, height: impH }}>
-              <span className="text-5xl font-black text-red-200 dark:text-red-800/50">DO NOW</span>
+            <div className="absolute flex items-center justify-center" style={{ top: 0, right: 0, width: urgW, height: impH }}>
+              <span className="text-4xl font-black text-red-200 dark:text-red-800/50">DO NOW</span>
             </div>
-            <div className="absolute flex items-center justify-center" style={{ top: 0, left: 0, width: tlL, height: impH }}>
+            <div className="absolute flex items-center justify-center" style={{ top: 0, left: 0, width: notUrgW, height: impH }}>
               <span className="text-5xl font-black text-blue-200 dark:text-blue-800/50">SCHEDULE</span>
             </div>
-            <div className="absolute flex items-center justify-center" style={{ bottom: 0, right: 0, width: tlW, height: impL }}>
-              <span className="text-4xl font-black text-amber-200 dark:text-amber-800/50">DELEGATE</span>
+            <div className="absolute flex items-center justify-center" style={{ bottom: 0, right: 0, width: urgW, height: impL }}>
+              <span className="text-3xl font-black text-amber-200 dark:text-amber-800/50">DELEGATE</span>
             </div>
-            <div className="absolute flex items-center justify-center" style={{ bottom: 0, left: 0, width: tlL, height: impL }}>
+            <div className="absolute flex items-center justify-center" style={{ bottom: 0, left: 0, width: notUrgW, height: impL }}>
               <span className="text-3xl font-black text-gray-200 dark:text-gray-700/50">DEPRIORITIZE</span>
             </div>
           </div>
@@ -186,16 +169,16 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
           })}
         </div>
 
-        {/* X-axis labels — actual dates */}
+        {/* X-axis labels */}
         <div className="flex justify-between pt-1 text-xs text-gray-400 dark:text-gray-500 px-1">
-          {timelineDates.map(({ pct, label, isToday }) => (
-            <span key={pct} className={isToday ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''}>
+          {xLabels.map(({ pct, label }) => (
+            <span key={pct} className={pct === URGENCY_DIVIDER ? 'font-bold text-indigo-500' : ''}>
               {label}
             </span>
           ))}
         </div>
         <div className="text-center text-[10px] text-gray-400 dark:text-gray-500">
-          Timeline →
+          Urgency (days until due) →
         </div>
       </div>
 

@@ -23,13 +23,16 @@ function getPriorityColor(quadrant: string, isOverdue: boolean) {
 
 export default function TaskCard({ task, onClick, onDragEnd, containerHeight, offsetX = 0, offsetY = 0 }: Props) {
   const colors = getPriorityColor(task.quadrant, task.isOverdue);
-  const dueDate = new Date(task.dueDate);
-  const today = new Date();
-  const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   const PADDING = 5;
   const xPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PADDING * 2) + offsetX));
   const yPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.y)) / 100) * (100 - PADDING * 2) + offsetY));
+
+  const daysLabel = task.daysRemaining < 0
+    ? `${Math.abs(task.daysRemaining)}d late`
+    : task.daysRemaining === 0
+    ? 'Today'
+    : `${task.daysRemaining}d`;
 
   return (
     <motion.div
@@ -55,14 +58,14 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         shadow hover:shadow-lg transition-shadow select-none z-10`}
       style={{ willChange: 'left, bottom' }}
       whileHover={{ scale: 1.3, zIndex: 50 }}
-      title={`${task.title}\nQuadrant: ${task.quadrant}\nImportance: ${task.importanceScore}\nDays left: ${daysLeft}\nPriority: ${task.priorityScore}\n${task.isOverdue ? 'OVERDUE' : ''}`}
+      title={`${task.title}\nQuadrant: ${task.quadrant}\nImportance: ${task.importanceScore}\nDays left: ${task.daysRemaining}\n${task.isOverdue ? 'OVERDUE' : ''}`}
     >
       <div className="flex items-center justify-between gap-0.5">
         <span className={`text-[6px] font-bold uppercase px-0.5 py-px rounded leading-none ${colors.badge} truncate`}>
           {task.isOverdue ? 'LATE' : task.quadrant}
         </span>
         <span className="text-[6px] text-gray-400 dark:text-gray-500 shrink-0">
-          {daysLeft < 0 ? `${Math.abs(daysLeft)}d` : `${daysLeft}d`}
+          {daysLabel}
         </span>
       </div>
       <div className={`text-[8px] font-bold truncate leading-tight ${colors.text}`}>{task.title}</div>

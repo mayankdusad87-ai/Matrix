@@ -45,6 +45,8 @@ export const tasks: Task[] = [
 
 export let nextId = 21;
 
+export const URGENCY_THRESHOLD = 7;
+
 export function calculateMedian(scores: number[]): number {
   if (scores.length === 0) return 50;
   const sorted = [...scores].sort((a, b) => a - b);
@@ -54,29 +56,39 @@ export function calculateMedian(scores: number[]): number {
     : sorted[mid];
 }
 
-export function computeFields(task: { startDate: string; dueDate: string; importanceScore: number }, median: number) {
+export function calculateDaysRemaining(dueDate: string): number {
+  const due = new Date(dueDate);
+  due.setHours(23, 59, 59, 999);
   const today = new Date();
-  const start = new Date(task.startDate);
-  const due = new Date(task.dueDate);
-  const taskDuration = due.getTime() - start.getTime();
-  const elapsed = today.getTime() - start.getTime();
-  const timelineProgress = taskDuration <= 0 ? 100 : Math.min(100, Math.max(0, Math.round((elapsed / taskDuration) * 10000) / 100));
-  const priorityScore = Math.round((task.importanceScore * 0.6 + timelineProgress * 0.4) * 100) / 100;
+  today.setHours(0, 0, 0, 0);
+  return Math.ceil((due.getTime() - today.getTime()) / 86400000);
+}
+
+export function computeFields(task: { dueDate: string; importanceScore: number }, median: number, maxDays: number) {
+  const daysRemaining = calculateDaysRemaining(task.dueDate);
   const highImportance = task.importanceScore >= median;
-  const highUrgency = timelineProgress >= 70;
-  const quadrant = highImportance && highUrgency ? 'Do Now' : highImportance ? 'Schedule' : highUrgency ? 'Delegate' : 'Deprioritize';
-  const dueEnd = new Date(due);
-  dueEnd.setHours(23, 59, 59, 999);
+  const urgent = daysRemaining <= URGENCY_THRESHOLD;
+  const quadrant = highImportance && urgent ? 'Do Now' : highImportance ? 'Schedule' : urgent ? 'Delegate' : 'Deprioritize';
+
+  let x: number;
+  if (daysRemaining <= 0) {
+    x = 100;
+  } else if (daysRemaining <= URGENCY_THRESHOLD) {
+    x = 70 + (1 - daysRemaining / URGENCY_THRESHOLD) * 30;
+  } else {
+    const nonUrgentRange = Math.max(maxDays - URGENCY_THRESHOLD, 1);
+    x = (1 - (daysRemaining - URGENCY_THRESHOLD) / nonUrgentRange) * 70;
+  }
+  x = Math.min(100, Math.max(0, Math.round(x * 100) / 100));
 
   return {
     ...task,
-    today: today.toISOString().split('T')[0],
-    timelineProgress,
-    x: timelineProgress,
+    today: new Date().toISOString().split('T')[0],
+    daysRemaining,
+    x,
     y: task.importanceScore,
-    priorityScore,
     quadrant,
-    isOverdue: today > dueEnd,
+    isOverdue: daysRemaining < 0,
     median,
   };
 }

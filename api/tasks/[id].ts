@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { tasks, computeFields, calculateMedian, setCors } from '../_shared';
+import { tasks, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors } from '../_shared';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -10,9 +10,10 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   if (taskIndex === -1) return res.status(404).json({ error: 'Task not found' });
 
   const median = calculateMedian(tasks.map(t => t.importanceScore));
+  const maxDays = Math.max(...tasks.map(t => calculateDaysRemaining(t.dueDate)), URGENCY_THRESHOLD);
 
   if (req.method === 'GET') {
-    return res.json(computeFields(tasks[taskIndex], median));
+    return res.json(computeFields(tasks[taskIndex], median, maxDays));
   }
 
   if (req.method === 'PUT') {
@@ -27,7 +28,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     if (req.body.category !== undefined) task.category = req.body.category;
     task.updatedAt = new Date().toISOString();
     const newMedian = calculateMedian(tasks.map(t => t.importanceScore));
-    return res.json(computeFields(task, newMedian));
+    const newMaxDays = Math.max(...tasks.map(t => calculateDaysRemaining(t.dueDate)), URGENCY_THRESHOLD);
+    return res.json(computeFields(task, newMedian, newMaxDays));
   }
 
   if (req.method === 'DELETE') {

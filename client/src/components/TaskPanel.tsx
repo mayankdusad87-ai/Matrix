@@ -60,8 +60,6 @@ export default function TaskPanel({ task, onClose, onUpdate, onDelete }: Props) 
           <InfoItem label="Category" value={task.category} />
           <InfoItem label="Start Date" value={new Date(task.startDate).toLocaleDateString()} />
           <InfoItem label="Due Date" value={new Date(task.dueDate).toLocaleDateString()} />
-          <InfoItem label="Timeline" value={`${task.timelineProgress}%`} />
-          <InfoItem label="Priority Score" value={String(task.priorityScore)} />
           <InfoItem label="Quadrant" value={task.quadrant} />
           <InfoItem
             label="Days Left"

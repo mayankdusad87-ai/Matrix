@@ -11,10 +11,9 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   today: string;
-  timelineProgress: number;
+  daysRemaining: number;
   x: number;
   y: number;
-  priorityScore: number;
   quadrant: string;
   isOverdue: boolean;
   median: number;

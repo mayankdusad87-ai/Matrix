@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { Op } from 'sequelize';
 import Task from '../models/task';
-import { computeTaskFields, calculateMedian } from '../utils/calculations';
+import { computeTaskFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD } from '../utils/calculations';
 
 const router = Router();
 
@@ -10,9 +9,14 @@ async function getAllEnriched() {
   const plains = allTasks.map(t => t.toJSON());
   const scores = plains.map(p => p.importanceScore);
   const median = calculateMedian(scores);
+  const today = new Date();
+  const maxDays = Math.max(
+    ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+    URGENCY_THRESHOLD
+  );
   return plains.map(plain => ({
     ...plain,
-    ...computeTaskFields(plain.startDate, plain.dueDate, plain.importanceScore, median),
+    ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays),
   }));
 }
 
@@ -64,9 +68,14 @@ router.get('/:id', async (req: Request, res: Response) => {
     const allTasks = await Task.findAll();
     const plains = allTasks.map(t => t.toJSON());
     const median = calculateMedian(plains.map(p => p.importanceScore));
+    const today = new Date();
+    const maxDays = Math.max(
+      ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+      URGENCY_THRESHOLD
+    );
     const plain = plains.find(p => p.id === parseInt(req.params.id));
     if (!plain) { res.status(404).json({ error: 'Task not found' }); return; }
-    res.json({ ...plain, ...computeTaskFields(plain.startDate, plain.dueDate, plain.importanceScore, median) });
+    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
@@ -78,8 +87,13 @@ router.post('/', async (req: Request, res: Response) => {
     const allTasks = await Task.findAll();
     const plains = allTasks.map(t => t.toJSON());
     const median = calculateMedian(plains.map(p => p.importanceScore));
+    const today = new Date();
+    const maxDays = Math.max(
+      ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+      URGENCY_THRESHOLD
+    );
     const plain = task.toJSON();
-    res.status(201).json({ ...plain, ...computeTaskFields(plain.startDate, plain.dueDate, plain.importanceScore, median) });
+    res.status(201).json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
@@ -93,8 +107,13 @@ router.put('/:id', async (req: Request, res: Response) => {
     const allTasks = await Task.findAll();
     const plains = allTasks.map(t => t.toJSON());
     const median = calculateMedian(plains.map(p => p.importanceScore));
+    const today = new Date();
+    const maxDays = Math.max(
+      ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+      URGENCY_THRESHOLD
+    );
     const plain = task.toJSON();
-    res.json({ ...plain, ...computeTaskFields(plain.startDate, plain.dueDate, plain.importanceScore, median) });
+    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }

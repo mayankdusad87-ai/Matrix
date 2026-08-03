@@ -50,7 +50,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
   const cellClass = 'px-3 py-2 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap';
   const thClass = 'px-3 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider';
 
-  const sorted = [...tasks].sort((a, b) => b.priorityScore - a.priorityScore);
+  const sorted = [...tasks].sort((a, b) => a.daysRemaining - b.daysRemaining);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4">
@@ -77,7 +77,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
               <th className={thClass}>Status</th>
               <th className={thClass}>Owner</th>
               <th className={thClass}>Category</th>
-              <th className={thClass}>Priority</th>
+              <th className={thClass}>Days Left</th>
               <th className={thClass}>Quadrant</th>
               <th className={thClass}>Actions</th>
             </tr>
@@ -117,6 +117,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 </td>
                 <td className={cellClass}>—</td>
                 <td className={cellClass}>—</td>
+
                 <td className={cellClass}>
                   <button onClick={handleAdd} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1 mr-1">Save</button>
                 </td>
@@ -141,7 +142,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                     </td>
                     <td className={cellClass}><input className={inputClass} value={editRow.owner} onChange={e => setEditRow({ ...editRow, owner: e.target.value })} /></td>
                     <td className={cellClass}><input className={inputClass} value={editRow.category} onChange={e => setEditRow({ ...editRow, category: e.target.value })} /></td>
-                    <td className={cellClass}><span className="font-medium">{task.priorityScore}</span></td>
+                    <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
                       <button onClick={() => saveEdit(task.id)} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1 mr-1">Save</button>
@@ -162,7 +163,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                     <td className={cellClass}><StatusBadge status={task.status} /></td>
                     <td className={cellClass}>{task.owner}</td>
                     <td className={cellClass}>{task.category}</td>
-                    <td className={cellClass}><span className="font-semibold">{task.priorityScore}</span></td>
+                    <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
                       <button onClick={() => startEdit(task)} className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mr-2">Edit</button>
@@ -188,6 +189,13 @@ function StatusBadge({ status }: { status: string }) {
   }[status] || 'bg-gray-100 text-gray-500';
 
   return <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${colors}`}>{status}</span>;
+}
+
+function DaysLeftBadge({ days }: { days: number }) {
+  if (days < 0) return <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">{Math.abs(days)}d late</span>;
+  if (days === 0) return <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">Today</span>;
+  if (days <= 7) return <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">{days}d</span>;
+  return <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{days}d</span>;
 }
 
 function QuadrantBadge({ quadrant, isOverdue }: { quadrant: string; isOverdue: boolean }) {

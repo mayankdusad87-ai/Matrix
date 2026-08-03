@@ -1,12 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { tasks, computeFields, calculateMedian, setCors } from '../_shared';
+import { tasks, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors } from '../_shared';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const median = calculateMedian(tasks.map(t => t.importanceScore));
-  const enriched = tasks.map(t => computeFields(t, median));
+  const maxDays = Math.max(...tasks.map(t => calculateDaysRemaining(t.dueDate)), URGENCY_THRESHOLD);
+  const enriched = tasks.map(t => computeFields(t, median, maxDays));
 
   const now = new Date();
   const startOfWeek = new Date(now);

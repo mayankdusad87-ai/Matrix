@@ -1,13 +1,11 @@
-export function calculateTimelineProgress(startDate: Date, dueDate: Date, today: Date = new Date()): number {
-  const taskDuration = dueDate.getTime() - startDate.getTime();
-  if (taskDuration <= 0) return 100;
-  const elapsed = today.getTime() - startDate.getTime();
-  const progress = (elapsed / taskDuration) * 100;
-  return Math.min(100, Math.max(0, Math.round(progress * 100) / 100));
-}
+export const URGENCY_THRESHOLD = 7;
 
-export function calculatePriorityScore(importanceScore: number, timelineProgress: number): number {
-  return Math.round((importanceScore * 0.6 + timelineProgress * 0.4) * 100) / 100;
+export function calculateDaysRemaining(dueDate: Date, today: Date = new Date()): number {
+  const due = new Date(dueDate);
+  due.setHours(23, 59, 59, 999);
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+  return Math.ceil((due.getTime() - todayStart.getTime()) / 86400000);
 }
 
 export function calculateMedian(scores: number[]): number {
@@ -19,55 +17,55 @@ export function calculateMedian(scores: number[]): number {
     : sorted[mid];
 }
 
-export function determineQuadrant(importanceScore: number, timelineProgress: number, median: number): string {
+export function determineQuadrant(importanceScore: number, daysRemaining: number, median: number): string {
   const highImportance = importanceScore >= median;
-  const highUrgency = timelineProgress >= 70;
+  const urgent = daysRemaining <= URGENCY_THRESHOLD;
 
-  if (highImportance && highUrgency) return 'Do Now';
-  if (highImportance && !highUrgency) return 'Schedule';
-  if (!highImportance && highUrgency) return 'Delegate';
+  if (highImportance && urgent) return 'Do Now';
+  if (highImportance && !urgent) return 'Schedule';
+  if (!highImportance && urgent) return 'Delegate';
   return 'Deprioritize';
-}
-
-export function isOverdue(dueDate: Date, today: Date = new Date()): boolean {
-  const due = new Date(dueDate);
-  due.setHours(23, 59, 59, 999);
-  return today > due;
 }
 
 export interface ComputedTaskFields {
   today: string;
-  timelineProgress: number;
+  daysRemaining: number;
   x: number;
   y: number;
-  priorityScore: number;
   quadrant: string;
   isOverdue: boolean;
   median: number;
 }
 
 export function computeTaskFields(
-  startDate: Date | string,
   dueDate: Date | string,
   importanceScore: number,
-  median: number
+  median: number,
+  maxDays: number
 ): ComputedTaskFields {
   const today = new Date();
-  const start = new Date(startDate);
   const due = new Date(dueDate);
+  const daysRemaining = calculateDaysRemaining(due, today);
+  const quadrant = determineQuadrant(importanceScore, daysRemaining, median);
 
-  const timelineProgress = calculateTimelineProgress(start, due, today);
-  const priorityScore = calculatePriorityScore(importanceScore, timelineProgress);
-  const quadrant = determineQuadrant(importanceScore, timelineProgress, median);
+  let x: number;
+  if (daysRemaining <= 0) {
+    x = 100;
+  } else if (daysRemaining <= URGENCY_THRESHOLD) {
+    x = 70 + (1 - daysRemaining / URGENCY_THRESHOLD) * 30;
+  } else {
+    const nonUrgentRange = Math.max(maxDays - URGENCY_THRESHOLD, 1);
+    x = (1 - (daysRemaining - URGENCY_THRESHOLD) / nonUrgentRange) * 70;
+  }
+  x = Math.min(100, Math.max(0, Math.round(x * 100) / 100));
 
   return {
     today: today.toISOString().split('T')[0],
-    timelineProgress,
-    x: timelineProgress,
+    daysRemaining,
+    x,
     y: importanceScore,
-    priorityScore,
     quadrant,
-    isOverdue: isOverdue(due, today),
+    isOverdue: daysRemaining < 0,
     median,
   };
 }
