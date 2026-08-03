@@ -14,6 +14,37 @@ function formatDate(d: Date) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function computeOffsets(tasks: Task[]): Map<number, { dx: number; dy: number }> {
+  const CELL = 10;
+  const offsets = new Map<number, { dx: number; dy: number }>();
+  const grid = new Map<string, number[]>();
+
+  for (const t of tasks) {
+    const cx = Math.round(t.x / CELL);
+    const cy = Math.round(t.y / CELL);
+    const key = `${cx},${cy}`;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key)!.push(t.id);
+  }
+
+  for (const ids of grid.values()) {
+    if (ids.length <= 1) {
+      offsets.set(ids[0], { dx: 0, dy: 0 });
+      continue;
+    }
+    ids.forEach((id, i) => {
+      const angle = (i / ids.length) * 2 * Math.PI;
+      const radius = 3 + ids.length * 1.5;
+      offsets.set(id, {
+        dx: Math.cos(angle) * radius,
+        dy: Math.sin(angle) * radius,
+      });
+    });
+  }
+
+  return offsets;
+}
+
 export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +58,8 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
     }
     return base;
   }, [median]);
+
+  const offsets = useMemo(() => computeOffsets(tasks), [tasks]);
 
   const timelineDates = useMemo(() => {
     if (tasks.length === 0) return [];
@@ -137,15 +170,20 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
           </div>
 
           {/* Task cards */}
-          {tasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onClick={onTaskClick}
-              onDragEnd={onImportanceChange}
-              containerHeight={containerRef.current?.clientHeight || 600}
-            />
-          ))}
+          {tasks.map(task => {
+            const offset = offsets.get(task.id) || { dx: 0, dy: 0 };
+            return (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onClick={onTaskClick}
+                onDragEnd={onImportanceChange}
+                containerHeight={containerRef.current?.clientHeight || 600}
+                offsetX={offset.dx}
+                offsetY={offset.dy}
+              />
+            );
+          })}
         </div>
 
         {/* X-axis labels — actual dates */}

@@ -6,6 +6,8 @@ interface Props {
   onClick: (task: Task) => void;
   onDragEnd: (task: Task, newImportance: number) => void;
   containerHeight: number;
+  offsetX?: number;
+  offsetY?: number;
 }
 
 function getPriorityColor(quadrant: string, isOverdue: boolean) {
@@ -19,15 +21,15 @@ function getPriorityColor(quadrant: string, isOverdue: boolean) {
   }
 }
 
-export default function TaskCard({ task, onClick, onDragEnd, containerHeight }: Props) {
+export default function TaskCard({ task, onClick, onDragEnd, containerHeight, offsetX = 0, offsetY = 0 }: Props) {
   const colors = getPriorityColor(task.quadrant, task.isOverdue);
   const dueDate = new Date(task.dueDate);
   const today = new Date();
   const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  const PADDING = 6;
-  const xPct = PADDING + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PADDING * 2);
-  const yPct = PADDING + (Math.min(100, Math.max(0, task.y)) / 100) * (100 - PADDING * 2);
+  const PADDING = 5;
+  const xPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PADDING * 2) + offsetX));
+  const yPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.y)) / 100) * (100 - PADDING * 2) + offsetY));
 
   return (
     <motion.div
@@ -50,24 +52,24 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight }: 
         }
       }}
       onClick={() => onClick(task)}
-      className={`absolute -translate-x-1/2 translate-y-1/2 w-28 rounded-md border ${colors.border} ${colors.bg} px-1.5 py-1 cursor-pointer
+      className={`absolute -translate-x-1/2 translate-y-1/2 w-20 rounded border ${colors.border} ${colors.bg} px-1 py-0.5 cursor-pointer
         shadow hover:shadow-lg transition-shadow select-none z-10`}
       style={{ willChange: 'left, bottom' }}
-      whileHover={{ scale: 1.1, zIndex: 50 }}
-      title={`${task.title}\nQuadrant: ${task.quadrant}\nDays left: ${daysLeft}\nPriority: ${task.priorityScore}\n${task.isOverdue ? 'OVERDUE' : ''}`}
+      whileHover={{ scale: 1.3, zIndex: 50 }}
+      title={`${task.title}\nQuadrant: ${task.quadrant}\nImportance: ${task.importanceScore}\nDays left: ${daysLeft}\nPriority: ${task.priorityScore}\n${task.isOverdue ? 'OVERDUE' : ''}`}
     >
-      <div className="flex items-center justify-between">
-        <span className={`text-[7px] font-bold uppercase px-1 py-px rounded ${colors.badge}`}>
-          {task.isOverdue ? 'OVERDUE' : task.quadrant}
+      <div className="flex items-center justify-between gap-0.5">
+        <span className={`text-[6px] font-bold uppercase px-0.5 py-px rounded leading-none ${colors.badge} truncate`}>
+          {task.isOverdue ? 'LATE' : task.quadrant}
         </span>
-        <span className="text-[7px] text-gray-400 dark:text-gray-500">
-          {daysLeft < 0 ? `${Math.abs(daysLeft)}d late` : `${daysLeft}d`}
+        <span className="text-[6px] text-gray-400 dark:text-gray-500 shrink-0">
+          {daysLeft < 0 ? `${Math.abs(daysLeft)}d` : `${daysLeft}d`}
         </span>
       </div>
-      <div className={`text-[10px] font-bold truncate mt-0.5 ${colors.text}`}>{task.title}</div>
-      <div className="flex items-center justify-between text-[8px] text-gray-400 dark:text-gray-500 mt-0.5">
-        <span>{task.owner}</span>
-        <span>P{Math.round(task.priorityScore)}</span>
+      <div className={`text-[8px] font-bold truncate leading-tight ${colors.text}`}>{task.title}</div>
+      <div className="flex items-center justify-between text-[7px] text-gray-400 dark:text-gray-500">
+        <span className="truncate">{task.owner}</span>
+        <span className="shrink-0">I{task.importanceScore}</span>
       </div>
     </motion.div>
   );
