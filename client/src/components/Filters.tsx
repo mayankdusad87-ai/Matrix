@@ -11,7 +11,7 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
   const owners = [...new Set(tasks.map(t => t.owner))].sort();
   const categories = [...new Set(tasks.map(t => t.category))].sort();
   const statuses = ['Not Started', 'In Progress', 'Completed', 'On Hold'];
-  const quadrants = ['Do', 'Schedule', 'Delegate', 'Delete'];
+  const quadrants = ['Do Now', 'Schedule', 'Delegate', 'Deprioritize'];
 
   const update = (key: keyof FiltersType, value: string) => {
     setFilters({ ...filters, [key]: value });

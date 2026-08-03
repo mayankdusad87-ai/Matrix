@@ -11,9 +11,10 @@ interface Props {
 function getPriorityColor(quadrant: string, isOverdue: boolean) {
   if (isOverdue) return { bg: 'bg-red-50 dark:bg-red-950', border: 'border-red-500', text: 'text-red-700 dark:text-red-300', badge: 'bg-red-500 text-white' };
   switch (quadrant) {
-    case 'Do': return { bg: 'bg-red-50 dark:bg-red-950', border: 'border-red-400', text: 'text-red-700 dark:text-red-300', badge: 'bg-red-500 text-white' };
+    case 'Do Now': return { bg: 'bg-red-50 dark:bg-red-950', border: 'border-red-400', text: 'text-red-700 dark:text-red-300', badge: 'bg-red-500 text-white' };
     case 'Schedule': return { bg: 'bg-blue-50 dark:bg-blue-950', border: 'border-blue-400', text: 'text-blue-700 dark:text-blue-300', badge: 'bg-blue-500 text-white' };
     case 'Delegate': return { bg: 'bg-amber-50 dark:bg-amber-950', border: 'border-amber-400', text: 'text-amber-700 dark:text-amber-300', badge: 'bg-amber-500 text-white' };
+    case 'Deprioritize': return { bg: 'bg-gray-50 dark:bg-gray-800', border: 'border-gray-400', text: 'text-gray-600 dark:text-gray-300', badge: 'bg-gray-500 text-white' };
     default: return { bg: 'bg-gray-50 dark:bg-gray-800', border: 'border-gray-400', text: 'text-gray-600 dark:text-gray-300', badge: 'bg-gray-500 text-white' };
   }
 }

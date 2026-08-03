@@ -8,10 +8,7 @@ interface Props {
   onImportanceChange: (task: Task, newImportance: number) => void;
 }
 
-const IMPORTANCE_THRESHOLD = 72;
 const TIMELINE_THRESHOLD = 70;
-
-const yLabels = [0, 20, 40, 60, IMPORTANCE_THRESHOLD, 80, 100];
 
 function formatDate(d: Date) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -20,24 +17,34 @@ function formatDate(d: Date) {
 export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const median = tasks.length > 0 ? tasks[0].median : 50;
+
+  const yLabels = useMemo(() => {
+    const base = [0, 20, 40, 60, 80, 100];
+    if (!base.includes(median)) {
+      base.push(median);
+      base.sort((a, b) => a - b);
+    }
+    return base;
+  }, [median]);
+
   const timelineDates = useMemo(() => {
     if (tasks.length === 0) return [];
     const allDates = tasks.flatMap(t => [new Date(t.startDate), new Date(t.dueDate)]);
     const min = new Date(Math.min(...allDates.map(d => d.getTime())));
     const max = new Date(Math.max(...allDates.map(d => d.getTime())));
-    const today = new Date();
     const range = max.getTime() - min.getTime();
 
     const pcts = [0, 25, 50, TIMELINE_THRESHOLD, 100];
     return pcts.map(pct => {
       const date = new Date(min.getTime() + (pct / 100) * range);
-      const isToday = Math.abs(date.getTime() - today.getTime()) < 86400000;
+      const isToday = Math.abs(date.getTime() - Date.now()) < 86400000;
       return { pct, label: formatDate(date), isToday };
     });
   }, [tasks]);
 
-  const impH = `${100 - IMPORTANCE_THRESHOLD}%`;
-  const impL = `${IMPORTANCE_THRESHOLD}%`;
+  const impH = `${100 - median}%`;
+  const impL = `${median}%`;
   const tlW = `${100 - TIMELINE_THRESHOLD}%`;
   const tlL = `${TIMELINE_THRESHOLD}%`;
 
@@ -47,7 +54,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
       {/* Y-axis labels */}
       <div className="flex flex-col justify-between py-1 pr-2 text-xs text-gray-400 dark:text-gray-500 w-8 shrink-0">
         {[...yLabels].reverse().map(v => (
-          <span key={v} className={`text-right leading-none ${v === IMPORTANCE_THRESHOLD ? 'font-bold text-indigo-500' : ''}`}>{v}</span>
+          <span key={v} className={`text-right leading-none ${v === median ? 'font-bold text-indigo-500' : ''}`}>{v}</span>
         ))}
       </div>
 
@@ -68,11 +75,18 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
             <div
               key={`h-${v}`}
               className={`absolute left-0 right-0 border-t ${
-                v === IMPORTANCE_THRESHOLD ? 'border-2 border-dashed border-indigo-400 dark:border-indigo-500 z-[5]' : 'border-gray-200 dark:border-gray-800'
+                v === median ? 'border-2 border-dashed border-indigo-400 dark:border-indigo-500 z-[5]' : 'border-gray-200 dark:border-gray-800'
               }`}
               style={{ bottom: `${v}%` }}
             />
           ))}
+
+          {/* Median label on divider */}
+          <div className="absolute left-1 z-[6] pointer-events-none" style={{ bottom: `${median}%` }}>
+            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-900 px-1 rounded -translate-y-1/2 inline-block">
+              Median: {median}
+            </span>
+          </div>
 
           {/* Grid lines - vertical */}
           {timelineDates.map(({ pct }) => (
@@ -109,7 +123,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
           {/* Quadrant labels */}
           <div className="absolute inset-0 pointer-events-none select-none z-0">
             <div className="absolute flex items-center justify-center" style={{ top: 0, right: 0, width: tlW, height: impH }}>
-              <span className="text-6xl font-black text-red-200 dark:text-red-800/50">DO</span>
+              <span className="text-5xl font-black text-red-200 dark:text-red-800/50">DO NOW</span>
             </div>
             <div className="absolute flex items-center justify-center" style={{ top: 0, left: 0, width: tlL, height: impH }}>
               <span className="text-5xl font-black text-blue-200 dark:text-blue-800/50">SCHEDULE</span>
@@ -118,7 +132,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
               <span className="text-4xl font-black text-amber-200 dark:text-amber-800/50">DELEGATE</span>
             </div>
             <div className="absolute flex items-center justify-center" style={{ bottom: 0, left: 0, width: tlL, height: impL }}>
-              <span className="text-5xl font-black text-gray-200 dark:text-gray-700/50">DELETE</span>
+              <span className="text-3xl font-black text-gray-200 dark:text-gray-700/50">DEPRIORITIZE</span>
             </div>
           </div>
 

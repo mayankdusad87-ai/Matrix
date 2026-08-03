@@ -18,17 +18,17 @@ interface TaskAttributes {
 interface TaskCreationAttributes extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'owner' | 'category'> {}
 
 class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
-  public id!: number;
-  public title!: string;
-  public description!: string;
-  public startDate!: Date;
-  public dueDate!: Date;
-  public importanceScore!: number;
-  public status!: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  public owner!: string;
-  public category!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare title: string;
+  declare description: string;
+  declare startDate: Date;
+  declare dueDate: Date;
+  declare importanceScore: number;
+  declare status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
+  declare owner: string;
+  declare category: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Task.init(

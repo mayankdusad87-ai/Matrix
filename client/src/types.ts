@@ -17,6 +17,7 @@ export interface Task {
   priorityScore: number;
   quadrant: string;
   isOverdue: boolean;
+  median: number;
 }
 
 export interface TaskStats {
@@ -24,9 +25,8 @@ export interface TaskStats {
   completed: number;
   inProgress: number;
   overdue: number;
-  avgImportance: number;
-  avgPriority: number;
   dueThisWeek: number;
+  median: number;
 }
 
 export interface Filters {

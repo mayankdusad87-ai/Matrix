@@ -45,7 +45,16 @@ export const tasks: Task[] = [
 
 export let nextId = 21;
 
-export function computeFields(task: Task) {
+export function calculateMedian(scores: number[]): number {
+  if (scores.length === 0) return 50;
+  const sorted = [...scores].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
+    : sorted[mid];
+}
+
+export function computeFields(task: { startDate: string; dueDate: string; importanceScore: number }, median: number) {
   const today = new Date();
   const start = new Date(task.startDate);
   const due = new Date(task.dueDate);
@@ -53,9 +62,9 @@ export function computeFields(task: Task) {
   const elapsed = today.getTime() - start.getTime();
   const timelineProgress = taskDuration <= 0 ? 100 : Math.min(100, Math.max(0, Math.round((elapsed / taskDuration) * 10000) / 100));
   const priorityScore = Math.round((task.importanceScore * 0.6 + timelineProgress * 0.4) * 100) / 100;
-  const highImportance = task.importanceScore >= 72;
+  const highImportance = task.importanceScore >= median;
   const highUrgency = timelineProgress >= 70;
-  const quadrant = highImportance && highUrgency ? 'Do' : highImportance ? 'Schedule' : highUrgency ? 'Delegate' : 'Delete';
+  const quadrant = highImportance && highUrgency ? 'Do Now' : highImportance ? 'Schedule' : highUrgency ? 'Delegate' : 'Deprioritize';
   const dueEnd = new Date(due);
   dueEnd.setHours(23, 59, 59, 999);
 
@@ -68,6 +77,7 @@ export function computeFields(task: Task) {
     priorityScore,
     quadrant,
     isOverdue: today > dueEnd,
+    median,
   };
 }
 

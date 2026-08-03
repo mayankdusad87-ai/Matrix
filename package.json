@@ -1,0 +1,24 @@
+{
+  "name": "matrix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mayankdusad87-ai/Matrix.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mayankdusad87-ai/Matrix/issues"
+  },
+  "homepage": "https://github.com/mayankdusad87-ai/Matrix#readme",
+  "devDependencies": {
+    "@vercel/node": "^5.9.3"
+  }
+}

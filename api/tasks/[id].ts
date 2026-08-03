@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { tasks, computeFields, setCors } from '../_shared';
+import { tasks, computeFields, calculateMedian, setCors } from '../_shared';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -9,8 +9,10 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const taskIndex = tasks.findIndex(t => t.id === id);
   if (taskIndex === -1) return res.status(404).json({ error: 'Task not found' });
 
+  const median = calculateMedian(tasks.map(t => t.importanceScore));
+
   if (req.method === 'GET') {
-    return res.json(computeFields(tasks[taskIndex]));
+    return res.json(computeFields(tasks[taskIndex], median));
   }
 
   if (req.method === 'PUT') {
@@ -24,7 +26,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     if (req.body.owner !== undefined) task.owner = req.body.owner;
     if (req.body.category !== undefined) task.category = req.body.category;
     task.updatedAt = new Date().toISOString();
-    return res.json(computeFields(task));
+    const newMedian = calculateMedian(tasks.map(t => t.importanceScore));
+    return res.json(computeFields(task, newMedian));
   }
 
   if (req.method === 'DELETE') {

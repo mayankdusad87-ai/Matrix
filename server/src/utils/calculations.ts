@@ -10,14 +10,23 @@ export function calculatePriorityScore(importanceScore: number, timelineProgress
   return Math.round((importanceScore * 0.6 + timelineProgress * 0.4) * 100) / 100;
 }
 
-export function determineQuadrant(importanceScore: number, timelineProgress: number): string {
-  const highImportance = importanceScore >= 72;
+export function calculateMedian(scores: number[]): number {
+  if (scores.length === 0) return 50;
+  const sorted = [...scores].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
+    : sorted[mid];
+}
+
+export function determineQuadrant(importanceScore: number, timelineProgress: number, median: number): string {
+  const highImportance = importanceScore >= median;
   const highUrgency = timelineProgress >= 70;
 
-  if (highImportance && highUrgency) return 'Do';
+  if (highImportance && highUrgency) return 'Do Now';
   if (highImportance && !highUrgency) return 'Schedule';
   if (!highImportance && highUrgency) return 'Delegate';
-  return 'Delete';
+  return 'Deprioritize';
 }
 
 export function isOverdue(dueDate: Date, today: Date = new Date()): boolean {
@@ -34,12 +43,14 @@ export interface ComputedTaskFields {
   priorityScore: number;
   quadrant: string;
   isOverdue: boolean;
+  median: number;
 }
 
 export function computeTaskFields(
   startDate: Date | string,
   dueDate: Date | string,
-  importanceScore: number
+  importanceScore: number,
+  median: number
 ): ComputedTaskFields {
   const today = new Date();
   const start = new Date(startDate);
@@ -47,7 +58,7 @@ export function computeTaskFields(
 
   const timelineProgress = calculateTimelineProgress(start, due, today);
   const priorityScore = calculatePriorityScore(importanceScore, timelineProgress);
-  const quadrant = determineQuadrant(importanceScore, timelineProgress);
+  const quadrant = determineQuadrant(importanceScore, timelineProgress, median);
 
   return {
     today: today.toISOString().split('T')[0],
@@ -57,5 +68,6 @@ export function computeTaskFields(
     priorityScore,
     quadrant,
     isOverdue: isOverdue(due, today),
+    median,
   };
 }

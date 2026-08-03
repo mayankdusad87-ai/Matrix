@@ -193,10 +193,10 @@ function StatusBadge({ status }: { status: string }) {
 function QuadrantBadge({ quadrant, isOverdue }: { quadrant: string; isOverdue: boolean }) {
   if (isOverdue) return <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-red-500 text-white">OVERDUE</span>;
   const colors = {
-    'Do': 'bg-red-500 text-white',
+    'Do Now': 'bg-red-500 text-white',
     'Schedule': 'bg-blue-500 text-white',
     'Delegate': 'bg-amber-500 text-white',
-    'Delete': 'bg-gray-500 text-white',
+    'Deprioritize': 'bg-gray-500 text-white',
   }[quadrant] || 'bg-gray-500 text-white';
 
   return <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${colors}`}>{quadrant}</span>;
