@@ -15,7 +15,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange }: Props
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex-1 flex justify-center p-3 min-h-0">
+    <div className="flex-1 flex justify-center px-3 py-1 min-h-0">
       <div className="flex w-full max-w-6xl gap-0">
       {/* Y-axis labels */}
       <div className="flex flex-col justify-between py-1 pr-2 text-xs text-gray-400 dark:text-gray-500 w-8 shrink-0">

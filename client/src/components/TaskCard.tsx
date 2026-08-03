@@ -49,41 +49,24 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight }: 
         }
       }}
       onClick={() => onClick(task)}
-      className={`absolute -translate-x-1/2 translate-y-1/2 w-40 rounded-lg border-2 ${colors.border} ${colors.bg} p-2 cursor-pointer
-        shadow-md hover:shadow-xl transition-shadow select-none z-10`}
+      className={`absolute -translate-x-1/2 translate-y-1/2 w-28 rounded-md border ${colors.border} ${colors.bg} px-1.5 py-1 cursor-pointer
+        shadow hover:shadow-lg transition-shadow select-none z-10`}
       style={{ willChange: 'left, bottom' }}
-      whileHover={{ scale: 1.06, zIndex: 50 }}
+      whileHover={{ scale: 1.1, zIndex: 50 }}
       title={`${task.title}\nQuadrant: ${task.quadrant}\nDays left: ${daysLeft}\nPriority: ${task.priorityScore}\n${task.isOverdue ? 'OVERDUE' : ''}`}
     >
-      {/* Quadrant badge */}
-      <div className="flex items-center justify-between mb-1">
-        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${colors.badge}`}>
+      <div className="flex items-center justify-between">
+        <span className={`text-[7px] font-bold uppercase px-1 py-px rounded ${colors.badge}`}>
           {task.isOverdue ? 'OVERDUE' : task.quadrant}
         </span>
-        <span className="text-[9px] text-gray-400 dark:text-gray-500">
-          {daysLeft < 0 ? `${Math.abs(daysLeft)}d late` : `${daysLeft}d left`}
+        <span className="text-[7px] text-gray-400 dark:text-gray-500">
+          {daysLeft < 0 ? `${Math.abs(daysLeft)}d late` : `${daysLeft}d`}
         </span>
       </div>
-
-      <div className={`text-xs font-bold truncate ${colors.text}`}>{task.title}</div>
-
-      <div className="mt-1 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+      <div className={`text-[10px] font-bold truncate mt-0.5 ${colors.text}`}>{task.title}</div>
+      <div className="flex items-center justify-between text-[8px] text-gray-400 dark:text-gray-500 mt-0.5">
         <span>{task.owner}</span>
-        <span>{dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-      </div>
-
-      <div className="mt-1 flex items-center gap-1 text-[10px]">
-        <span className={`font-semibold ${colors.text}`}>P{Math.round(task.priorityScore)}</span>
-        <span className="text-gray-400">I{task.importanceScore}</span>
-        <span className="flex-1" />
-        <span className={`px-1.5 py-0.5 rounded-full ${
-          task.status === 'Completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
-          task.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
-          task.status === 'On Hold' ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300' :
-          'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-        }`}>
-          {task.status}
-        </span>
+        <span>P{Math.round(task.priorityScore)}</span>
       </div>
     </motion.div>
   );
