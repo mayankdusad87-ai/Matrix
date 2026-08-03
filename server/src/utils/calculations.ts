@@ -11,7 +11,7 @@ export function calculatePriorityScore(importanceScore: number, timelineProgress
 }
 
 export function determineQuadrant(importanceScore: number, timelineProgress: number): string {
-  const highImportance = importanceScore >= 70;
+  const highImportance = importanceScore >= 72;
   const highUrgency = timelineProgress >= 70;
 
   if (highImportance && highUrgency) return 'Do';

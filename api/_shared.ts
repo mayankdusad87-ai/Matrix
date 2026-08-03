@@ -53,7 +53,7 @@ export function computeFields(task: Task) {
   const elapsed = today.getTime() - start.getTime();
   const timelineProgress = taskDuration <= 0 ? 100 : Math.min(100, Math.max(0, Math.round((elapsed / taskDuration) * 10000) / 100));
   const priorityScore = Math.round((task.importanceScore * 0.6 + timelineProgress * 0.4) * 100) / 100;
-  const highImportance = task.importanceScore >= 70;
+  const highImportance = task.importanceScore >= 72;
   const highUrgency = timelineProgress >= 70;
   const quadrant = highImportance && highUrgency ? 'Do' : highImportance ? 'Schedule' : highUrgency ? 'Delegate' : 'Delete';
   const dueEnd = new Date(due);
