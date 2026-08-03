@@ -4,13 +4,13 @@ import Dashboard from './components/Dashboard';
 import Filters from './components/Filters';
 import Matrix from './components/Matrix';
 import TaskPanel from './components/TaskPanel';
-import CreateTaskModal from './components/CreateTaskModal';
+import InputSheet from './components/InputSheet';
 import type { Task } from './types';
 
 export default function App() {
   const { tasks, stats, loading, filters, setFilters, createTask, updateTask, deleteTask } = useTasks();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [activeTab, setActiveTab] = useState<'input' | 'matrix'>('input');
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -25,10 +25,6 @@ export default function App() {
 
   const handleImportanceChange = async (task: Task, newImportance: number) => {
     await updateTask(task.id, { importanceScore: newImportance });
-  };
-
-  const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
   };
 
   if (loading) {
@@ -46,20 +42,63 @@ export default function App() {
         <h1 className="text-xl font-bold tracking-tight">
           <span className="text-indigo-600 dark:text-indigo-400">Priority</span> Matrix
         </h1>
-        <button
-          onClick={() => setDark(!dark)}
-          className="rounded-lg p-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title="Toggle theme"
-        >
-          {dark ? '☀️' : '🌙'}
-        </button>
+
+        <div className="flex items-center gap-1">
+          {/* Tab buttons */}
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 mr-3">
+            <button
+              onClick={() => setActiveTab('input')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'input'
+                  ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              Input Sheet
+            </button>
+            <button
+              onClick={() => setActiveTab('matrix')}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'matrix'
+                  ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              Matrix View
+            </button>
+          </div>
+
+          <button
+            onClick={() => setDark(!dark)}
+            className="rounded-lg p-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Toggle theme"
+          >
+            {dark ? '☀️' : '🌙'}
+          </button>
+        </div>
       </div>
 
+      {/* Dashboard KPIs */}
       <div className="max-w-6xl w-full mx-auto">
         <Dashboard stats={stats} />
-        <Filters filters={filters} setFilters={setFilters} tasks={tasks} onCreateClick={() => setShowCreate(true)} />
       </div>
-      <Matrix tasks={tasks} onTaskClick={handleTaskClick} onImportanceChange={handleImportanceChange} />
+
+      {/* Tab content */}
+      {activeTab === 'input' ? (
+        <InputSheet
+          tasks={tasks}
+          onUpdate={updateTask}
+          onDelete={deleteTask}
+          onCreate={createTask}
+        />
+      ) : (
+        <>
+          <div className="max-w-6xl w-full mx-auto">
+            <Filters filters={filters} setFilters={setFilters} tasks={tasks} onCreateClick={() => setActiveTab('input')} />
+          </div>
+          <Matrix tasks={tasks} onTaskClick={(t) => setSelectedTask(t)} onImportanceChange={handleImportanceChange} />
+        </>
+      )}
 
       {selectedTask && (
         <TaskPanel
@@ -72,15 +111,6 @@ export default function App() {
           onDelete={async (id) => {
             await deleteTask(id);
             setSelectedTask(null);
-          }}
-        />
-      )}
-
-      {showCreate && (
-        <CreateTaskModal
-          onClose={() => setShowCreate(false)}
-          onCreate={async (data) => {
-            await createTask({ ...data, owner: data.owner || 'Unassigned' });
           }}
         />
       )}
