@@ -33,7 +33,6 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
 
   return (
     <motion.div
-      layout
       initial={false}
       animate={{
         left: `${xPct}%`,
