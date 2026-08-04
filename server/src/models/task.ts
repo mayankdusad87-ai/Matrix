@@ -1,82 +1,43 @@
-import { DataTypes, Model, Optional } from 'sequelize';
-import sequelize from '../database';
+import mongoose, { Schema, Document } from 'mongoose';
 
-interface TaskAttributes {
-  id: number;
+export interface ITask extends Document {
   title: string;
   description: string;
-  startDate: Date | string;
-  dueDate: Date | string;
+  startDate: string;
+  dueDate: string;
   importanceScore: number;
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
   owner: string;
   category: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-interface TaskCreationAttributes extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'owner' | 'category'> {}
-
-class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
-  declare id: number;
-  declare title: string;
-  declare description: string;
-  declare startDate: Date;
-  declare dueDate: Date;
-  declare importanceScore: number;
-  declare status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  declare owner: string;
-  declare category: string;
-  declare readonly createdAt: Date;
-  declare readonly updatedAt: Date;
-}
-
-Task.init(
+const taskSchema = new Schema<ITask>(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    title: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      defaultValue: '',
-    },
-    startDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-    },
-    dueDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-    },
-    importanceScore: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { min: 0, max: 100 },
-    },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: '' },
+    startDate: { type: String, required: true },
+    dueDate: { type: String, required: true },
+    importanceScore: { type: Number, required: true, min: 0, max: 100 },
     status: {
-      type: DataTypes.ENUM('Not Started', 'In Progress', 'Completed', 'On Hold'),
-      defaultValue: 'Not Started',
+      type: String,
+      enum: ['Not Started', 'In Progress', 'Completed', 'On Hold'],
+      default: 'Not Started',
     },
-    owner: {
-      type: DataTypes.STRING(100),
-      defaultValue: 'Unassigned',
-    },
-    category: {
-      type: DataTypes.STRING(100),
-      defaultValue: 'General',
-    },
+    owner: { type: String, default: 'Unassigned' },
+    category: { type: String, default: 'General' },
   },
   {
-    sequelize,
-    tableName: 'tasks',
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform(_doc: unknown, ret: Record<string, unknown>) {
+        ret.id = ret._id;
+        delete ret.__v;
+      },
+    },
   }
 );
 
-export default Task;
+export default mongoose.model<ITask>('Task', taskSchema);

@@ -4,8 +4,8 @@ import type { Task } from '../types';
 interface Props {
   task: Task;
   onClose: () => void;
-  onUpdate: (id: number, updates: Record<string, unknown>) => Promise<unknown>;
-  onDelete: (id: number) => Promise<void>;
+  onUpdate: (id: string, updates: Record<string, unknown>) => Promise<unknown>;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export default function TaskPanel({ task, onClose, onUpdate, onDelete }: Props) {

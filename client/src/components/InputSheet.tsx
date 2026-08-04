@@ -3,15 +3,15 @@ import type { Task } from '../types';
 
 interface Props {
   tasks: Task[];
-  onUpdate: (id: number, updates: Record<string, unknown>) => Promise<unknown>;
-  onDelete: (id: number) => Promise<void>;
+  onUpdate: (id: string, updates: Record<string, unknown>) => Promise<unknown>;
+  onDelete: (id: string) => Promise<void>;
   onCreate: (data: Record<string, unknown>) => Promise<void>;
 }
 
 const statusOptions = ['Not Started', 'In Progress', 'Completed', 'On Hold'];
 
 export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Props) {
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editRow, setEditRow] = useState<Record<string, string | number>>({});
   const [showAddRow, setShowAddRow] = useState(false);
   const today = new Date().toISOString().split('T')[0];
@@ -34,7 +34,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
     });
   };
 
-  const saveEdit = async (id: number) => {
+  const saveEdit = async (id: string) => {
     await onUpdate(id, editRow);
     setEditingId(null);
   };

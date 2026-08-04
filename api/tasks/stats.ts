@@ -1,13 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { tasks, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors } from '../_shared';
+import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors, type TaskLike } from '../_shared';
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const median = calculateMedian(tasks.map(t => t.importanceScore));
-  const maxDays = Math.max(...tasks.map(t => calculateDaysRemaining(t.dueDate)), URGENCY_THRESHOLD);
-  const enriched = tasks.map(t => computeFields(t, median, maxDays));
+  await connectDB();
+
+  const allTasks = await Task.find().lean() as TaskLike[];
+  const median = calculateMedian(allTasks.map(t => t.importanceScore));
+  const today = new Date();
+  const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
+  const enriched = allTasks.map(t => computeFields(t, median, maxDays));
 
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -21,7 +25,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const completed = enriched.filter(t => t.status === 'Completed').length;
   const inProgress = enriched.filter(t => t.status === 'In Progress').length;
   const overdue = enriched.filter(t => t.isOverdue && t.status !== 'Completed').length;
-  const dueThisWeek = tasks.filter(t => {
+  const dueThisWeek = allTasks.filter(t => {
     const due = new Date(t.dueDate);
     return due >= startOfWeek && due <= endOfWeek;
   }).length;

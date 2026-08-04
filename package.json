@@ -20,5 +20,8 @@
   "homepage": "https://github.com/mayankdusad87-ai/Matrix#readme",
   "devDependencies": {
     "@vercel/node": "^5.9.3"
+  },
+  "dependencies": {
+    "mongoose": "^9.9.1"
   }
 }

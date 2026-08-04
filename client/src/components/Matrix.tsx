@@ -10,10 +10,10 @@ interface Props {
 
 const URGENCY_DIVIDER = 70;
 
-function computeOffsets(tasks: Task[]): Map<number, { dx: number; dy: number }> {
+function computeOffsets(tasks: Task[]): Map<string, { dx: number; dy: number }> {
   const CELL = 10;
-  const offsets = new Map<number, { dx: number; dy: number }>();
-  const grid = new Map<string, number[]>();
+  const offsets = new Map<string, { dx: number; dy: number }>();
+  const grid = new Map<string, string[]>();
 
   for (const t of tasks) {
     const cx = Math.round(t.x / CELL);

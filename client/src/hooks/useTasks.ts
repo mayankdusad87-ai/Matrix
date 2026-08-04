@@ -54,7 +54,7 @@ export function useTasks() {
     await fetchStats();
   };
 
-  const updateTask = async (id: number, updates: Record<string, unknown>) => {
+  const updateTask = async (id: string, updates: Record<string, unknown>) => {
     const res = await fetch(`${API}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -67,7 +67,7 @@ export function useTasks() {
     return updated;
   };
 
-  const deleteTask = async (id: number) => {
+  const deleteTask = async (id: string) => {
     await fetch(`${API}/${id}`, { method: 'DELETE' });
     setTasks(prev => prev.filter(t => t.id !== id));
     await fetchStats();

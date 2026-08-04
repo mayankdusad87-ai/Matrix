@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import sequelize from './database';
+import { connectDB } from './database';
 import taskRoutes from './routes/tasks';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -20,10 +20,7 @@ app.use(errorHandler);
 
 async function start() {
   try {
-    await sequelize.authenticate();
-    console.log('Database connected.');
-    await sequelize.sync();
-    console.log('Tables synced.');
+    await connectDB();
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
