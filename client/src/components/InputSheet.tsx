@@ -16,12 +16,13 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
   const [showAddRow, setShowAddRow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const today = new Date().toISOString().split('T')[0];
-  const [newRow, setNewRow] = useState({ title: '', dueDate: '', importanceScore: 50 });
+  const [newRow, setNewRow] = useState({ title: '', startDate: today, dueDate: '', importanceScore: 50 });
 
   const startEdit = (task: Task) => {
     setEditingId(task.id);
     setEditRow({
       title: task.title,
+      startDate: task.startDate,
       dueDate: task.dueDate,
       importanceScore: task.importanceScore,
       status: task.status,
@@ -39,18 +40,17 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
   };
 
   const handleAdd = async () => {
-    if (!newRow.title || !newRow.dueDate) return;
+    if (!newRow.title || !newRow.startDate || !newRow.dueDate) return;
     try {
       setError(null);
       await onCreate({
         ...newRow,
-        startDate: today,
         description: '',
         status: 'Not Started',
         owner: 'Unassigned',
         category: 'General',
       });
-      setNewRow({ title: '', dueDate: '', importanceScore: 50 });
+      setNewRow({ title: '', startDate: today, dueDate: '', importanceScore: 50 });
       setShowAddRow(false);
     } catch (err) {
       setError(`Failed to add task: ${(err as Error).message}`);
@@ -96,6 +96,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
             <tr>
               <th className={thClass}>#</th>
               <th className={thClass}>Title</th>
+              <th className={thClass}>Start Date</th>
               <th className={thClass}>Due Date</th>
               <th className={thClass}>Importance</th>
               <th className={thClass}>Status</th>
@@ -111,6 +112,9 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 <td className={cellClass}><span className="text-gray-400">new</span></td>
                 <td className={cellClass}>
                   <input className={inputClass} value={newRow.title} onChange={e => setNewRow({ ...newRow, title: e.target.value })} placeholder="Task title *" autoFocus />
+                </td>
+                <td className={cellClass}>
+                  <input type="date" className={inputClass} value={newRow.startDate} onChange={e => setNewRow({ ...newRow, startDate: e.target.value })} />
                 </td>
                 <td className={cellClass}>
                   <input type="date" className={inputClass} value={newRow.dueDate} onChange={e => setNewRow({ ...newRow, dueDate: e.target.value })} />
@@ -134,6 +138,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 {editingId === task.id ? (
                   <>
                     <td className={cellClass}><input className={inputClass} value={editRow.title} onChange={e => setEditRow({ ...editRow, title: e.target.value })} /></td>
+                    <td className={cellClass}><input type="date" className={inputClass} value={editRow.startDate} onChange={e => setEditRow({ ...editRow, startDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="date" className={inputClass} value={editRow.dueDate} onChange={e => setEditRow({ ...editRow, dueDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="number" min={0} max={100} className={inputClass + ' w-16'} value={editRow.importanceScore} onChange={e => setEditRow({ ...editRow, importanceScore: Number(e.target.value) })} /></td>
                     <td className={cellClass}>
@@ -151,6 +156,7 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 ) : (
                   <>
                     <td className={cellClass + ' font-medium text-gray-900 dark:text-white max-w-[200px] truncate'}>{task.title}</td>
+                    <td className={cellClass}>{task.startDate}</td>
                     <td className={cellClass}>{task.dueDate}</td>
                     <td className={cellClass}>
                       <span className="inline-flex items-center justify-center w-8 h-6 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold text-xs">
