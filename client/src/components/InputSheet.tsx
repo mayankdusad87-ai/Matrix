@@ -174,9 +174,8 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
               <th className={thClass}>Start Date</th>
               <th className={thClass}>Due Date</th>
               <th className={thClass}>Importance</th>
-              <th className={thClass}>Progress</th>
               <th className={thClass}>Status</th>
-              <th className={thClass}>Days Left</th>
+              <th className={thClass}>Timeline</th>
               <th className={thClass}>Quadrant</th>
               <th className={thClass}>Actions</th>
             </tr>
@@ -200,7 +199,6 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                 <td className={cellClass}>—</td>
                 <td className={cellClass}>—</td>
                 <td className={cellClass}>—</td>
-                <td className={cellClass}>—</td>
                 <td className={cellClass}>
                   <button onClick={handleAdd} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1">Save</button>
                 </td>
@@ -217,13 +215,12 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                     <td className={cellClass}><input type="date" className={inputClass} value={editRow.startDate} onChange={e => setEditRow({ ...editRow, startDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="date" className={inputClass} value={editRow.dueDate} onChange={e => setEditRow({ ...editRow, dueDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="number" min={0} max={100} className={inputClass + ' w-16'} value={editRow.importanceScore} onChange={e => setEditRow({ ...editRow, importanceScore: Number(e.target.value) })} /></td>
-                    <td className={cellClass}><ProgressBar value={task.timelineProgress} /></td>
                     <td className={cellClass}>
                       <select className={inputClass} value={editRow.status} onChange={e => setEditRow({ ...editRow, status: e.target.value })}>
                         {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </td>
-                    <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
+                    <td className={cellClass}><TimelineBadge task={task} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
                       <button onClick={() => saveEdit(task.id)} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1 mr-1">Save</button>
@@ -247,9 +244,8 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                         {task.importanceScore}
                       </span>
                     </td>
-                    <td className={cellClass}><ProgressBar value={task.timelineProgress} /></td>
                     <td className={cellClass}><StatusBadge status={task.status} /></td>
-                    <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
+                    <td className={cellClass}><TimelineBadge task={task} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
                       <button onClick={() => startEdit(task)} className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mr-2">Edit</button>
@@ -292,9 +288,6 @@ function MobileTaskCard({ task, index, onEdit, onDelete }: { task: Task; index: 
               I:{task.importanceScore}
             </span>
           </div>
-          <div className="mt-1.5">
-            <ProgressBar value={task.timelineProgress} />
-          </div>
         </div>
         <div className="flex gap-1 ml-2 shrink-0">
           <button onClick={() => onEdit(task)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
@@ -305,15 +298,21 @@ function MobileTaskCard({ task, index, onEdit, onDelete }: { task: Task; index: 
   );
 }
 
-function ProgressBar({ value }: { value?: number }) {
-  const pct = value ?? 0;
+function TimelineBadge({ task }: { task: Task }) {
+  const pct = task.timelineProgress ?? 0;
+  const days = task.daysRemaining;
   const color = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-orange-400' : pct >= 40 ? 'bg-yellow-400' : 'bg-green-400';
+
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="w-16 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+    <div className="min-w-[80px]">
+      <DaysLeftBadge days={days} />
+      <div className="mt-1 w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 w-7">{pct}%</span>
+      <div className="flex justify-between text-[9px] text-gray-400 mt-0.5">
+        <span>{task.startDate?.slice(5)}</span>
+        <span>{task.dueDate?.slice(5)}</span>
+      </div>
     </div>
   );
 }
