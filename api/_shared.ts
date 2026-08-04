@@ -1,14 +1,16 @@
 import mongoose from 'mongoose';
 
-// --- MongoDB Connection (cached for serverless) ---
-let isConnected = false;
+// --- MongoDB Connection (cached for Vercel serverless) ---
+let cached: typeof mongoose | null = null;
 
 export async function connectDB() {
-  if (isConnected) return;
+  if (cached) return cached;
   const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error('MONGODB_URI env var is not set');
-  await mongoose.connect(uri);
-  isConnected = true;
+  if (!uri) throw new Error('MONGODB_URI env var is not set in Vercel');
+  cached = await mongoose.connect(uri, {
+    bufferCommands: false,
+  });
+  return cached;
 }
 
 // --- Mongoose Task Model ---
