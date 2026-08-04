@@ -14,36 +14,56 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRow, setEditRow] = useState<Record<string, string | number>>({});
   const [showAddRow, setShowAddRow] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const today = new Date().toISOString().split('T')[0];
-  const [newRow, setNewRow] = useState({
-    title: '', description: '', startDate: today, dueDate: '',
-    importanceScore: 50, status: 'Not Started', owner: '', category: 'General',
-  });
+  const [newRow, setNewRow] = useState({ title: '', dueDate: '', importanceScore: 50 });
 
   const startEdit = (task: Task) => {
     setEditingId(task.id);
     setEditRow({
       title: task.title,
-      description: task.description,
-      startDate: task.startDate,
       dueDate: task.dueDate,
       importanceScore: task.importanceScore,
       status: task.status,
-      owner: task.owner,
-      category: task.category,
     });
   };
 
   const saveEdit = async (id: string) => {
-    await onUpdate(id, editRow);
-    setEditingId(null);
+    try {
+      setError(null);
+      await onUpdate(id, editRow);
+      setEditingId(null);
+    } catch (err) {
+      setError(`Failed to save: ${(err as Error).message}`);
+    }
   };
 
   const handleAdd = async () => {
     if (!newRow.title || !newRow.dueDate) return;
-    await onCreate({ ...newRow, owner: newRow.owner || 'Unassigned' });
-    setNewRow({ title: '', description: '', startDate: today, dueDate: '', importanceScore: 50, status: 'Not Started', owner: '', category: 'General' });
-    setShowAddRow(false);
+    try {
+      setError(null);
+      await onCreate({
+        ...newRow,
+        startDate: today,
+        description: '',
+        status: 'Not Started',
+        owner: 'Unassigned',
+        category: 'General',
+      });
+      setNewRow({ title: '', dueDate: '', importanceScore: 50 });
+      setShowAddRow(false);
+    } catch (err) {
+      setError(`Failed to add task: ${(err as Error).message}`);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      setError(null);
+      await onDelete(id);
+    } catch (err) {
+      setError(`Failed to delete: ${(err as Error).message}`);
+    }
   };
 
   const inputClass = 'w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500';
@@ -57,12 +77,18 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">Task Input Sheet</h2>
         <button
-          onClick={() => setShowAddRow(!showAddRow)}
+          onClick={() => { setShowAddRow(!showAddRow); setError(null); }}
           className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 transition-colors"
         >
           {showAddRow ? 'Cancel' : '+ Add Task'}
         </button>
       </div>
+
+      {error && (
+        <div className="mb-3 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <table className="w-full">
@@ -70,33 +96,21 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
             <tr>
               <th className={thClass}>#</th>
               <th className={thClass}>Title</th>
-              <th className={thClass}>Description</th>
-              <th className={thClass}>Start Date</th>
               <th className={thClass}>Due Date</th>
               <th className={thClass}>Importance</th>
               <th className={thClass}>Status</th>
-              <th className={thClass}>Owner</th>
-              <th className={thClass}>Category</th>
               <th className={thClass}>Days Left</th>
               <th className={thClass}>Quadrant</th>
               <th className={thClass}>Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {/* Add new row */}
+            {/* Add new row — only 3 inputs */}
             {showAddRow && (
               <tr className="bg-indigo-50/50 dark:bg-indigo-900/20">
+                <td className={cellClass}><span className="text-gray-400">new</span></td>
                 <td className={cellClass}>
-                  <span className="text-gray-400">new</span>
-                </td>
-                <td className={cellClass}>
-                  <input className={inputClass} value={newRow.title} onChange={e => setNewRow({ ...newRow, title: e.target.value })} placeholder="Task title *" />
-                </td>
-                <td className={cellClass}>
-                  <input className={inputClass} value={newRow.description} onChange={e => setNewRow({ ...newRow, description: e.target.value })} placeholder="Description" />
-                </td>
-                <td className={cellClass}>
-                  <input type="date" className={inputClass} value={newRow.startDate} onChange={e => setNewRow({ ...newRow, startDate: e.target.value })} />
+                  <input className={inputClass} value={newRow.title} onChange={e => setNewRow({ ...newRow, title: e.target.value })} placeholder="Task title *" autoFocus />
                 </td>
                 <td className={cellClass}>
                   <input type="date" className={inputClass} value={newRow.dueDate} onChange={e => setNewRow({ ...newRow, dueDate: e.target.value })} />
@@ -104,22 +118,11 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 <td className={cellClass}>
                   <input type="number" min={0} max={100} className={inputClass + ' w-16'} value={newRow.importanceScore} onChange={e => setNewRow({ ...newRow, importanceScore: Number(e.target.value) })} />
                 </td>
-                <td className={cellClass}>
-                  <select className={inputClass} value={newRow.status} onChange={e => setNewRow({ ...newRow, status: e.target.value })}>
-                    {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </td>
-                <td className={cellClass}>
-                  <input className={inputClass} value={newRow.owner} onChange={e => setNewRow({ ...newRow, owner: e.target.value })} placeholder="Owner" />
-                </td>
-                <td className={cellClass}>
-                  <input className={inputClass} value={newRow.category} onChange={e => setNewRow({ ...newRow, category: e.target.value })} placeholder="Category" />
-                </td>
                 <td className={cellClass}>—</td>
                 <td className={cellClass}>—</td>
-
+                <td className={cellClass}>—</td>
                 <td className={cellClass}>
-                  <button onClick={handleAdd} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1 mr-1">Save</button>
+                  <button onClick={handleAdd} className="text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1">Save</button>
                 </td>
               </tr>
             )}
@@ -131,8 +134,6 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 {editingId === task.id ? (
                   <>
                     <td className={cellClass}><input className={inputClass} value={editRow.title} onChange={e => setEditRow({ ...editRow, title: e.target.value })} /></td>
-                    <td className={cellClass}><input className={inputClass} value={editRow.description} onChange={e => setEditRow({ ...editRow, description: e.target.value })} /></td>
-                    <td className={cellClass}><input type="date" className={inputClass} value={editRow.startDate} onChange={e => setEditRow({ ...editRow, startDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="date" className={inputClass} value={editRow.dueDate} onChange={e => setEditRow({ ...editRow, dueDate: e.target.value })} /></td>
                     <td className={cellClass}><input type="number" min={0} max={100} className={inputClass + ' w-16'} value={editRow.importanceScore} onChange={e => setEditRow({ ...editRow, importanceScore: Number(e.target.value) })} /></td>
                     <td className={cellClass}>
@@ -140,8 +141,6 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                         {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </td>
-                    <td className={cellClass}><input className={inputClass} value={editRow.owner} onChange={e => setEditRow({ ...editRow, owner: e.target.value })} /></td>
-                    <td className={cellClass}><input className={inputClass} value={editRow.category} onChange={e => setEditRow({ ...editRow, category: e.target.value })} /></td>
                     <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
@@ -152,8 +151,6 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                 ) : (
                   <>
                     <td className={cellClass + ' font-medium text-gray-900 dark:text-white max-w-[200px] truncate'}>{task.title}</td>
-                    <td className={cellClass + ' max-w-[200px] truncate text-gray-500 dark:text-gray-400'}>{task.description || '—'}</td>
-                    <td className={cellClass}>{task.startDate}</td>
                     <td className={cellClass}>{task.dueDate}</td>
                     <td className={cellClass}>
                       <span className="inline-flex items-center justify-center w-8 h-6 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold text-xs">
@@ -161,13 +158,11 @@ export default function InputSheet({ tasks, onUpdate, onDelete, onCreate }: Prop
                       </span>
                     </td>
                     <td className={cellClass}><StatusBadge status={task.status} /></td>
-                    <td className={cellClass}>{task.owner}</td>
-                    <td className={cellClass}>{task.category}</td>
                     <td className={cellClass}><DaysLeftBadge days={task.daysRemaining} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
                       <button onClick={() => startEdit(task)} className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mr-2">Edit</button>
-                      <button onClick={() => onDelete(task.id)} className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                      <button onClick={() => handleDelete(task.id)} className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline">Delete</button>
                     </td>
                   </>
                 )}
