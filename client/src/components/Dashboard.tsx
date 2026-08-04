@@ -12,7 +12,7 @@ export default function Dashboard({ stats }: { stats: TaskStats | null }) {
   if (!stats) return null;
 
   return (
-    <div className="grid grid-cols-5 gap-2 px-3 py-2">
+    <div className="grid grid-cols-3 md:grid-cols-5 gap-2 px-3 py-2">
       {kpis.map(({ key, label, color, darkColor }) => (
         <div key={key} className={`rounded-lg px-2 py-1.5 text-center ${color} ${darkColor}`}>
           <div className="text-lg font-bold leading-tight">{stats[key]}</div>

@@ -16,7 +16,7 @@ async function getAllEnriched() {
   );
   return plains.map(plain => ({
     ...plain,
-    ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays),
+    ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate),
   }));
 }
 
@@ -75,7 +75,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     );
     const plain = plains.find(p => String(p._id) === req.params.id);
     if (!plain) { res.status(404).json({ error: 'Task not found' }); return; }
-    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
+    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate) });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
@@ -93,7 +93,7 @@ router.post('/', async (req: Request, res: Response) => {
       URGENCY_THRESHOLD
     );
     const plain = task.toJSON();
-    res.status(201).json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
+    res.status(201).json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate) });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
@@ -112,7 +112,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       URGENCY_THRESHOLD
     );
     const plain = task.toJSON();
-    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays) });
+    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate) });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }

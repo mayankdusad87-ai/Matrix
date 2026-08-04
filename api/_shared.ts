@@ -28,6 +28,7 @@ const taskSchema = new mongoose.Schema(
     },
     owner: { type: String, default: 'Unassigned' },
     category: { type: String, default: 'General' },
+    blockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
   },
   {
     timestamps: true,
@@ -94,6 +95,15 @@ export function computeFields(task: TaskLike, median: number, maxDays: number) {
   }
   x = Math.min(100, Math.max(0, Math.round(x * 100) / 100));
 
+  // Timeline progress: how far between startDate → dueDate
+  const startDate = new Date(task.startDate as string);
+  const dueDate = new Date(task.dueDate);
+  const totalDuration = dueDate.getTime() - startDate.getTime();
+  const elapsed = today.getTime() - startDate.getTime();
+  const timelineProgress = totalDuration > 0
+    ? Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
+    : 100;
+
   return {
     ...task,
     id: task._id || task.id,
@@ -104,6 +114,7 @@ export function computeFields(task: TaskLike, median: number, maxDays: number) {
     quadrant,
     isOverdue: daysRemaining < 0,
     median,
+    timelineProgress,
   };
 }
 

@@ -35,13 +35,15 @@ export interface ComputedTaskFields {
   quadrant: string;
   isOverdue: boolean;
   median: number;
+  timelineProgress: number;
 }
 
 export function computeTaskFields(
   dueDate: Date | string,
   importanceScore: number,
   median: number,
-  maxDays: number
+  maxDays: number,
+  startDate?: Date | string
 ): ComputedTaskFields {
   const today = new Date();
   const due = new Date(dueDate);
@@ -59,6 +61,17 @@ export function computeTaskFields(
   }
   x = Math.min(100, Math.max(0, Math.round(x * 100) / 100));
 
+  // Timeline progress: how far between startDate → dueDate
+  let timelineProgress = 100;
+  if (startDate) {
+    const start = new Date(startDate);
+    const totalDuration = due.getTime() - start.getTime();
+    const elapsed = today.getTime() - start.getTime();
+    timelineProgress = totalDuration > 0
+      ? Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
+      : 100;
+  }
+
   return {
     today: today.toISOString().split('T')[0],
     daysRemaining,
@@ -67,5 +80,6 @@ export function computeTaskFields(
     quadrant,
     isOverdue: daysRemaining < 0,
     median,
+    timelineProgress,
   };
 }

@@ -3,23 +3,32 @@ import type { Task } from '../types';
 
 interface Props {
   task: Task;
+  allTasks: Task[];
   onClose: () => void;
   onUpdate: (id: string, updates: Record<string, unknown>) => Promise<unknown>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
 }
 
-export default function TaskPanel({ task, onClose, onUpdate, onDelete }: Props) {
+export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete }: Props) {
   const [importance, setImportance] = useState(task.importanceScore);
   const [status, setStatus] = useState(task.status);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
+  const [blockedBy, setBlockedBy] = useState<string[]>(task.blockedBy || []);
 
   const daysLeft = Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  const progress = task.timelineProgress ?? 0;
 
   const handleSave = async () => {
-    await onUpdate(task.id, { importanceScore: importance, status, title, description });
+    await onUpdate(task.id, { importanceScore: importance, status, title, description, blockedBy });
     setEditing(false);
+  };
+
+  const otherTasks = allTasks.filter(t => t.id !== task.id);
+
+  const toggleDependency = (depId: string) => {
+    setBlockedBy(prev => prev.includes(depId) ? prev.filter(id => id !== depId) : [...prev, depId]);
   };
 
   return (
@@ -68,6 +77,25 @@ export default function TaskPanel({ task, onClose, onUpdate, onDelete }: Props) 
           />
         </div>
 
+        {/* Timeline progress */}
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+            Timeline Progress: <span className={`font-bold ${progress >= 90 ? 'text-red-500' : progress >= 70 ? 'text-orange-500' : 'text-indigo-600 dark:text-indigo-400'}`}>{progress}%</span>
+          </label>
+          <div className="mt-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                progress >= 90 ? 'bg-red-500' : progress >= 70 ? 'bg-orange-400' : progress >= 40 ? 'bg-yellow-400' : 'bg-green-400'
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+            <span>{task.startDate}</span>
+            <span>{task.dueDate}</span>
+          </div>
+        </div>
+
         {/* Importance slider */}
         <div>
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
@@ -99,6 +127,41 @@ export default function TaskPanel({ task, onClose, onUpdate, onDelete }: Props) 
             <option value="Completed">Completed</option>
             <option value="On Hold">On Hold</option>
           </select>
+        </div>
+
+        {/* Dependencies */}
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1 block">
+            Blocked By ({blockedBy.length})
+          </label>
+          {blockedBy.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {blockedBy.map(depId => {
+                const depTask = allTasks.find(t => t.id === depId);
+                return (
+                  <span key={depId} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+                    🔒 {depTask?.title || 'Unknown'}
+                    <button onClick={() => toggleDependency(depId)} className="text-red-500 hover:text-red-700 font-bold">×</button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          {editing && otherTasks.length > 0 && (
+            <div className="max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+              {otherTasks.map(t => (
+                <label key={t.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={blockedBy.includes(t.id)}
+                    onChange={() => toggleDependency(t.id)}
+                    className="accent-red-500"
+                  />
+                  <span className="text-gray-700 dark:text-gray-300 truncate">{t.title}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

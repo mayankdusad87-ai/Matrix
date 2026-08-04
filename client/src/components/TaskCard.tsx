@@ -156,6 +156,18 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
             {task.importanceScore}
           </span>
         </div>
+
+        {/* Timeline progress bar */}
+        <div className="mt-0.5 h-[3px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${
+              (task.timelineProgress ?? 0) >= 90 ? 'bg-red-500' :
+              (task.timelineProgress ?? 0) >= 70 ? 'bg-orange-400' :
+              (task.timelineProgress ?? 0) >= 40 ? 'bg-yellow-400' : 'bg-green-400'
+            }`}
+            style={{ width: `${task.timelineProgress ?? 0}%` }}
+          />
+        </div>
       </motion.div>
 
       {/* Tooltip — rendered via Portal so it escapes overflow-hidden */}
@@ -211,6 +223,19 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                   <div className="flex justify-between">
                     <span className="opacity-60">Status</span>
                     <span className="font-semibold">{task.status}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="opacity-60">Progress</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-12 h-1.5 bg-gray-700 dark:bg-gray-300 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${
+                          (task.timelineProgress ?? 0) >= 90 ? 'bg-red-400' :
+                          (task.timelineProgress ?? 0) >= 70 ? 'bg-orange-400' :
+                          (task.timelineProgress ?? 0) >= 40 ? 'bg-yellow-400' : 'bg-green-400'
+                        }`} style={{ width: `${task.timelineProgress ?? 0}%` }} />
+                      </div>
+                      <span className="font-semibold">{task.timelineProgress ?? 0}%</span>
+                    </div>
                   </div>
                 </div>
 

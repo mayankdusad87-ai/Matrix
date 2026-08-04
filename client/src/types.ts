@@ -8,10 +8,12 @@ export interface Task {
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
   owner: string;
   category: string;
+  blockedBy: string[];
   createdAt: string;
   updatedAt: string;
   today: string;
   daysRemaining: number;
+  timelineProgress: number;
   x: number;
   y: number;
   quadrant: string;

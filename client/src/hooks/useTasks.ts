@@ -8,6 +8,8 @@ export function useTasks() {
   const [stats, setStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>({ owner: '', status: '', category: '', quadrant: '' });
+  const [search, setSearch] = useState('');
+  const [deletedTask, setDeletedTask] = useState<Task | null>(null);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -67,11 +69,54 @@ export function useTasks() {
     return updated;
   };
 
-  const deleteTask = async (id: string) => {
-    await fetch(`${API}/${id}`, { method: 'DELETE' });
+  // Soft delete: remove from UI immediately, toast handles the actual API call
+  const deleteTask = (id: string) => {
+    const taskToDelete = tasks.find(t => t.id === id);
+    if (!taskToDelete) return;
+
+    // If there's already a pending delete, finalize it in background
+    if (deletedTask) {
+      fetch(`${API}/${deletedTask.id}`, { method: 'DELETE' }).catch(() => {});
+    }
+
     setTasks(prev => prev.filter(t => t.id !== id));
-    await fetchStats();
+    setDeletedTask(taskToDelete);
   };
 
-  return { tasks, stats, loading, filters, setFilters, createTask, updateTask, deleteTask, refetch: fetchTasks };
+  const undoDelete = useCallback(() => {
+    if (deletedTask) {
+      setTasks(prev => [...prev, deletedTask]);
+      setDeletedTask(null);
+    }
+  }, [deletedTask]);
+
+  const dismissUndo = useCallback(async () => {
+    if (deletedTask) {
+      await fetch(`${API}/${deletedTask.id}`, { method: 'DELETE' }).catch(() => {});
+      setDeletedTask(null);
+      await fetchStats();
+    }
+  }, [deletedTask, fetchStats]);
+
+  const filteredTasks = search
+    ? tasks.filter(t => t.title.toLowerCase().includes(search.toLowerCase()))
+    : tasks;
+
+  return {
+    tasks: filteredTasks,
+    allTasks: tasks,
+    stats,
+    loading,
+    filters,
+    setFilters,
+    search,
+    setSearch,
+    createTask,
+    updateTask,
+    deleteTask,
+    deletedTask,
+    undoDelete,
+    dismissUndo,
+    refetch: fetchTasks,
+  };
 }

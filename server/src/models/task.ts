@@ -9,6 +9,7 @@ export interface ITask extends Document {
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
   owner: string;
   category: string;
+  blockedBy: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,7 @@ const taskSchema = new Schema<ITask>(
     },
     owner: { type: String, default: 'Unassigned' },
     category: { type: String, default: 'General' },
+    blockedBy: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
   },
   {
     timestamps: true,
