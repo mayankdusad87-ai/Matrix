@@ -133,30 +133,30 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`absolute -translate-x-1/2 translate-y-1/2 w-[88px] rounded-lg border ${style.border} ${style.bg}
-          px-1.5 py-1 cursor-pointer shadow-sm hover:shadow-md ring-1 ${style.ring}
+        className={`absolute -translate-x-1/2 translate-y-1/2 w-[64px] md:w-[88px] rounded-md md:rounded-lg border ${style.border} ${style.bg}
+          px-1 md:px-1.5 py-0.5 md:py-1 cursor-pointer shadow-sm hover:shadow-md ring-1 ${style.ring}
           transition-shadow select-none z-10`}
         style={{ willChange: 'left, bottom' }}
         whileHover={{ scale: 1.2, zIndex: 50 }}
       >
         {/* Card badge */}
-        <div className="flex items-center justify-between gap-0.5 mb-0.5">
-          <span className={`text-[7px] font-bold uppercase tracking-wider px-1 py-px rounded-sm ${style.badgeText} leading-none ${style.badge} truncate`}>
+        <div className="flex items-center justify-between gap-0.5 mb-px md:mb-0.5">
+          <span className={`text-[5px] md:text-[7px] font-bold uppercase tracking-wider px-0.5 md:px-1 py-px rounded-sm ${style.badgeText} leading-none ${style.badge} truncate`}>
             {task.isOverdue ? '⚠ LATE' : task.quadrant}
           </span>
         </div>
 
         {/* Title */}
-        <div className={`text-[9px] font-semibold truncate leading-tight ${style.text}`}>
+        <div className={`text-[7px] md:text-[9px] font-semibold truncate leading-tight ${style.text}`}>
           {task.title}
         </div>
 
         {/* Days + importance footer */}
-        <div className="flex items-center justify-between mt-0.5">
-          <span className={`text-[7px] font-semibold ${urgencyColor}`}>
+        <div className="flex items-center justify-between mt-px md:mt-0.5">
+          <span className={`text-[6px] md:text-[7px] font-semibold ${urgencyColor}`}>
             {task.daysRemaining < 0 ? `${Math.abs(task.daysRemaining)}d late` : task.daysRemaining === 0 ? 'Today' : `${task.daysRemaining}d`}
           </span>
-          <span className="text-[7px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/60 px-1 rounded-sm tabular-nums">
+          <span className="text-[6px] md:text-[7px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/60 px-0.5 md:px-1 rounded-sm tabular-nums">
             {task.importanceScore}
           </span>
         </div>
