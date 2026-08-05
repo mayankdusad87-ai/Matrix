@@ -14,45 +14,50 @@ interface Props {
 
 const QUADRANT_STYLES = {
   'Do Now': {
-    bg: 'bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-950/80 dark:to-rose-900/60',
-    border: 'border-red-400 dark:border-red-500',
-    text: 'text-red-800 dark:text-red-200',
+    bg: 'bg-white dark:bg-gray-800',
+    border: 'border-red-300 dark:border-red-600/60',
+    text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-red-500',
-    ring: 'ring-red-400/30',
+    badgeText: 'text-white',
+    ring: 'ring-red-200/40 dark:ring-red-800/30',
     icon: '🔥',
   },
   'Schedule': {
-    bg: 'bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/80 dark:to-indigo-900/60',
-    border: 'border-blue-400 dark:border-blue-500',
-    text: 'text-blue-800 dark:text-blue-200',
+    bg: 'bg-white dark:bg-gray-800',
+    border: 'border-blue-300 dark:border-blue-600/60',
+    text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-blue-500',
-    ring: 'ring-blue-400/30',
+    badgeText: 'text-white',
+    ring: 'ring-blue-200/40 dark:ring-blue-800/30',
     icon: '📅',
   },
   'Delegate': {
-    bg: 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/80 dark:to-orange-900/60',
-    border: 'border-amber-400 dark:border-amber-500',
-    text: 'text-amber-800 dark:text-amber-200',
+    bg: 'bg-white dark:bg-gray-800',
+    border: 'border-amber-300 dark:border-amber-600/60',
+    text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-amber-500',
-    ring: 'ring-amber-400/30',
+    badgeText: 'text-white',
+    ring: 'ring-amber-200/40 dark:ring-amber-800/30',
     icon: '👋',
   },
   'Deprioritize': {
-    bg: 'bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900/80 dark:to-gray-800/60',
-    border: 'border-slate-400 dark:border-slate-500',
-    text: 'text-slate-700 dark:text-slate-300',
-    badge: 'bg-slate-500',
-    ring: 'ring-slate-400/30',
+    bg: 'bg-white dark:bg-gray-800',
+    border: 'border-gray-300 dark:border-gray-600/60',
+    text: 'text-gray-700 dark:text-gray-300',
+    badge: 'bg-gray-400 dark:bg-gray-500',
+    badgeText: 'text-white',
+    ring: 'ring-gray-200/40 dark:ring-gray-700/30',
     icon: '📋',
   },
 } as const;
 
 const OVERDUE_STYLE = {
-  bg: 'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900/80',
-  border: 'border-red-500 dark:border-red-400',
+  bg: 'bg-red-50 dark:bg-red-950/40',
+  border: 'border-red-400 dark:border-red-500/70',
   text: 'text-red-800 dark:text-red-200',
   badge: 'bg-red-600',
-  ring: 'ring-red-500/40',
+  badgeText: 'text-white',
+  ring: 'ring-red-300/40 dark:ring-red-800/40',
   icon: '⚠️',
 };
 
@@ -81,14 +86,13 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
     : task.daysRemaining <= 3
     ? 'text-orange-600 dark:text-orange-400'
     : task.daysRemaining <= 7
-    ? 'text-yellow-600 dark:text-yellow-400'
-    : 'text-green-600 dark:text-green-400';
+    ? 'text-amber-600 dark:text-amber-400'
+    : 'text-emerald-600 dark:text-emerald-400';
 
   const updateTooltipPos = useCallback(() => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
-    // Check if there's room above; if not, show below
     const above = rect.top > TOOLTIP_H + TOOLTIP_GAP + 10;
     const x = Math.max(TOOLTIP_W / 2 + 8, Math.min(window.innerWidth - TOOLTIP_W / 2 - 8, centerX));
     const y = above
@@ -129,21 +133,21 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`absolute -translate-x-1/2 translate-y-1/2 w-[88px] rounded-lg border-[1.5px] ${style.border} ${style.bg}
-          px-1.5 py-1 cursor-pointer shadow-md hover:shadow-xl ring-1 ${style.ring}
+        className={`absolute -translate-x-1/2 translate-y-1/2 w-[88px] rounded-lg border ${style.border} ${style.bg}
+          px-1.5 py-1 cursor-pointer shadow-sm hover:shadow-md ring-1 ${style.ring}
           transition-shadow select-none z-10`}
         style={{ willChange: 'left, bottom' }}
-        whileHover={{ scale: 1.25, zIndex: 50 }}
+        whileHover={{ scale: 1.2, zIndex: 50 }}
       >
         {/* Card badge */}
         <div className="flex items-center justify-between gap-0.5 mb-0.5">
-          <span className={`text-[7px] font-bold uppercase tracking-wider px-1 py-px rounded-sm text-white leading-none ${style.badge} truncate`}>
+          <span className={`text-[7px] font-bold uppercase tracking-wider px-1 py-px rounded-sm ${style.badgeText} leading-none ${style.badge} truncate`}>
             {task.isOverdue ? '⚠ LATE' : task.quadrant}
           </span>
         </div>
 
         {/* Title */}
-        <div className={`text-[9px] font-bold truncate leading-tight ${style.text}`}>
+        <div className={`text-[9px] font-semibold truncate leading-tight ${style.text}`}>
           {task.title}
         </div>
 
@@ -152,25 +156,25 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
           <span className={`text-[7px] font-semibold ${urgencyColor}`}>
             {task.daysRemaining < 0 ? `${Math.abs(task.daysRemaining)}d late` : task.daysRemaining === 0 ? 'Today' : `${task.daysRemaining}d`}
           </span>
-          <span className="text-[7px] font-semibold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 px-1 rounded-sm">
+          <span className="text-[7px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/60 px-1 rounded-sm tabular-nums">
             {task.importanceScore}
           </span>
         </div>
 
         {/* Timeline progress bar */}
-        <div className="mt-0.5 h-[3px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="mt-0.5 h-[2px] bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
               (task.timelineProgress ?? 0) >= 90 ? 'bg-red-500' :
               (task.timelineProgress ?? 0) >= 70 ? 'bg-orange-400' :
-              (task.timelineProgress ?? 0) >= 40 ? 'bg-yellow-400' : 'bg-green-400'
+              (task.timelineProgress ?? 0) >= 40 ? 'bg-amber-400' : 'bg-emerald-400'
             }`}
             style={{ width: `${task.timelineProgress ?? 0}%` }}
           />
         </div>
       </motion.div>
 
-      {/* Tooltip — rendered via Portal so it escapes overflow-hidden */}
+      {/* Tooltip via Portal */}
       {createPortal(
         <AnimatePresence>
           {hovered && tooltipPos && (
@@ -189,15 +193,15 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                 zIndex: 9999,
               }}
             >
-              <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg shadow-2xl px-3 py-2.5 text-left border border-gray-700 dark:border-gray-300"
+              <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl shadow-2xl px-3 py-2.5 text-left"
                 style={{ width: TOOLTIP_W }}
               >
                 {/* Arrow */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 dark:bg-gray-100 rotate-45 border-gray-700 dark:border-gray-300"
+                  className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-gray-900 dark:bg-gray-100 rotate-45"
                   style={tooltipPos.above
-                    ? { bottom: -6, borderBottom: '1px solid', borderRight: '1px solid', borderColor: 'inherit' }
-                    : { top: -6, borderTop: '1px solid', borderLeft: '1px solid', borderColor: 'inherit' }
+                    ? { bottom: -5 }
+                    : { top: -5 }
                   }
                 />
 
@@ -205,42 +209,42 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
 
                 <div className="space-y-1 text-[10px]">
                   <div className="flex justify-between">
-                    <span className="opacity-60">Quadrant</span>
+                    <span className="opacity-50">Quadrant</span>
                     <span className="font-semibold">{style.icon} {task.isOverdue ? 'Overdue' : task.quadrant}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Importance</span>
-                    <span className="font-semibold">{task.importanceScore} / 100</span>
+                    <span className="opacity-50">Importance</span>
+                    <span className="font-semibold tabular-nums">{task.importanceScore} / 100</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Due Date</span>
+                    <span className="opacity-50">Due Date</span>
                     <span className="font-semibold">{task.dueDate}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Time Left</span>
+                    <span className="opacity-50">Time Left</span>
                     <span className={`font-bold ${urgencyColor}`}>{daysLabel}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Status</span>
+                    <span className="opacity-50">Status</span>
                     <span className="font-semibold">{task.status}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="opacity-60">Progress</span>
+                    <span className="opacity-50">Progress</span>
                     <div className="flex items-center gap-1.5">
                       <div className="w-12 h-1.5 bg-gray-700 dark:bg-gray-300 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${
                           (task.timelineProgress ?? 0) >= 90 ? 'bg-red-400' :
                           (task.timelineProgress ?? 0) >= 70 ? 'bg-orange-400' :
-                          (task.timelineProgress ?? 0) >= 40 ? 'bg-yellow-400' : 'bg-green-400'
+                          (task.timelineProgress ?? 0) >= 40 ? 'bg-amber-400' : 'bg-emerald-400'
                         }`} style={{ width: `${task.timelineProgress ?? 0}%` }} />
                       </div>
-                      <span className="font-semibold">{task.timelineProgress ?? 0}%</span>
+                      <span className="font-semibold tabular-nums">{task.timelineProgress ?? 0}%</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-2 pt-1.5 border-t border-gray-700/50 dark:border-gray-300/50 text-[9px] opacity-50 text-center">
-                  Click to edit  •  Drag to adjust importance
+                <div className="mt-2 pt-1.5 border-t border-gray-700/40 dark:border-gray-300/40 text-[9px] opacity-40 text-center">
+                  Click to edit · Drag ↕ importance
                 </div>
               </div>
             </motion.div>
