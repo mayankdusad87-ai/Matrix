@@ -22,26 +22,27 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
   const activeCount = [filters.owner, filters.status, filters.category, filters.quadrant].filter(Boolean).length;
 
   const selectClass =
-    'w-full rounded-lg border border-gray-200/80 dark:border-white/[0.06] bg-white dark:bg-[#1a1d26] text-[13px] px-2.5 py-[7px] text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400/50';
+    'w-full rounded-lg text-[13px] px-2.5 py-[7px] font-medium focus:outline-none focus:ring-2 transition-colors duration-150';
 
   return (
-    <div className="border-b border-gray-200/80 dark:border-white/[0.06]">
+    <div>
       <div className="flex items-center gap-2 px-4 md:px-5 py-2">
         {/* Mobile: filter toggle */}
         <button
           onClick={() => setOpen(!open)}
-          className={`md:hidden flex items-center gap-1.5 rounded-lg border px-3 py-[6px] text-[13px] transition-colors ${
-            activeCount > 0
-              ? 'border-indigo-300 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-              : 'border-gray-200/80 dark:border-white/[0.06] bg-white dark:bg-[#1a1d26] text-gray-500 dark:text-gray-400'
-          }`}
+          className="md:hidden flex items-center gap-1.5 rounded-lg px-3 py-[6px] text-[13px] font-medium transition-colors duration-150"
+          style={{
+            border: `1px solid ${activeCount > 0 ? 'var(--accent)' : 'var(--border)'}`,
+            background: activeCount > 0 ? 'var(--accent-subtle)' : 'var(--bg-surface)',
+            color: activeCount > 0 ? 'var(--accent)' : 'var(--text-secondary)',
+          }}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
           Filters
           {activeCount > 0 && (
-            <span className="bg-indigo-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+            <span className="text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none text-white" style={{ background: 'var(--accent)' }}>
               {activeCount}
             </span>
           )}
@@ -49,28 +50,36 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
 
         {/* Desktop: inline selects */}
         <div className="hidden md:flex items-center gap-2 flex-1">
-          <select className={`${selectClass} !w-auto min-w-[110px]`} value={filters.owner} onChange={e => update('owner', e.target.value)}>
-            <option value="">All Owners</option>
-            {owners.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-          <select className={`${selectClass} !w-auto min-w-[110px]`} value={filters.status} onChange={e => update('status', e.target.value)}>
-            <option value="">All Statuses</option>
-            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select className={`${selectClass} !w-auto min-w-[110px]`} value={filters.category} onChange={e => update('category', e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select className={`${selectClass} !w-auto min-w-[110px]`} value={filters.quadrant} onChange={e => update('quadrant', e.target.value)}>
-            <option value="">All Quadrants</option>
-            {quadrants.map(q => <option key={q} value={q}>{q}</option>)}
-          </select>
+          {[
+            { key: 'owner' as const, placeholder: 'All Owners', options: owners },
+            { key: 'status' as const, placeholder: 'All Statuses', options: statuses },
+            { key: 'category' as const, placeholder: 'All Categories', options: categories },
+            { key: 'quadrant' as const, placeholder: 'All Quadrants', options: quadrants },
+          ].map(({ key, placeholder, options }) => (
+            <select
+              key={key}
+              className={`${selectClass} !w-auto min-w-[120px]`}
+              style={{
+                border: `1px solid ${filters[key] ? 'var(--accent)' : 'var(--border)'}`,
+                background: filters[key] ? 'var(--accent-subtle)' : 'var(--bg-surface)',
+                color: filters[key] ? 'var(--accent)' : 'var(--text-secondary)',
+              }}
+              value={filters[key]}
+              onChange={e => update(key, e.target.value)}
+            >
+              <option value="">{placeholder}</option>
+              {options.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          ))}
           {activeCount > 0 && (
             <button
               onClick={() => setFilters({ owner: '', status: '', category: '', quadrant: '' })}
-              className="text-[12px] text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+              className="text-[12px] font-medium px-2 py-1 rounded-md transition-colors duration-150"
+              style={{ color: 'var(--text-tertiary)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
             >
-              Clear
+              Clear all
             </button>
           )}
         </div>
@@ -79,34 +88,49 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
 
         <button
           onClick={onCreateClick}
-          className="rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-[13px] font-medium px-3.5 py-[6px] transition-colors"
+          className="rounded-lg text-white text-[13px] font-medium px-3.5 py-[6px] transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+          style={{ background: 'var(--accent)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >
-          + New
+          <span className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" d="M12 5v14m-7-7h14" />
+            </svg>
+            New Task
+          </span>
         </button>
       </div>
 
+      {/* Mobile expanded filters */}
       {open && (
-        <div className="md:hidden grid grid-cols-2 gap-2 px-4 pb-3">
-          <select className={selectClass} value={filters.owner} onChange={e => update('owner', e.target.value)}>
-            <option value="">All Owners</option>
-            {owners.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-          <select className={selectClass} value={filters.status} onChange={e => update('status', e.target.value)}>
-            <option value="">All Statuses</option>
-            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select className={selectClass} value={filters.category} onChange={e => update('category', e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select className={selectClass} value={filters.quadrant} onChange={e => update('quadrant', e.target.value)}>
-            <option value="">All Quadrants</option>
-            {quadrants.map(q => <option key={q} value={q}>{q}</option>)}
-          </select>
+        <div className="md:hidden grid grid-cols-2 gap-2 px-4 pb-3 animate-fade-in">
+          {[
+            { key: 'owner' as const, placeholder: 'All Owners', options: owners },
+            { key: 'status' as const, placeholder: 'All Statuses', options: statuses },
+            { key: 'category' as const, placeholder: 'All Categories', options: categories },
+            { key: 'quadrant' as const, placeholder: 'All Quadrants', options: quadrants },
+          ].map(({ key, placeholder, options }) => (
+            <select
+              key={key}
+              className={selectClass}
+              style={{
+                border: `1px solid ${filters[key] ? 'var(--accent)' : 'var(--border)'}`,
+                background: filters[key] ? 'var(--accent-subtle)' : 'var(--bg-surface)',
+                color: filters[key] ? 'var(--accent)' : 'var(--text-secondary)',
+              }}
+              value={filters[key]}
+              onChange={e => update(key, e.target.value)}
+            >
+              <option value="">{placeholder}</option>
+              {options.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          ))}
           {activeCount > 0 && (
             <button
               onClick={() => { setFilters({ owner: '', status: '', category: '', quadrant: '' }); setOpen(false); }}
-              className="col-span-2 text-[13px] text-indigo-600 dark:text-indigo-400 py-1"
+              className="col-span-2 text-[13px] font-medium py-1"
+              style={{ color: 'var(--accent)' }}
             >
               Clear all filters
             </button>

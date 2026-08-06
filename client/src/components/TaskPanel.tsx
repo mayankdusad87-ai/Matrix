@@ -26,184 +26,232 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
   };
 
   const otherTasks = allTasks.filter(t => t.id !== task.id);
-
   const toggleDependency = (depId: string) => {
     setBlockedBy(prev => prev.includes(depId) ? prev.filter(id => id !== depId) : [...prev, depId]);
   };
 
+  const inputClass = 'w-full rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-colors duration-150';
+
   return (
-    <div className="fixed inset-y-0 right-0 w-96 max-w-full bg-white dark:bg-gray-800 shadow-2xl z-50 flex flex-col border-l border-gray-200 dark:border-gray-700">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">Task Details</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
-      </div>
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 animate-fade-in"
+        style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
+        onClick={onClose}
+      />
 
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Title */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Title</label>
-          {editing ? (
-            <input value={title} onChange={e => setTitle(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-white" />
-          ) : (
-            <p className="mt-1 text-gray-900 dark:text-white font-semibold">{task.title}</p>
-          )}
+      {/* Panel */}
+      <div
+        className="fixed inset-y-0 right-0 w-[420px] max-w-full z-50 flex flex-col animate-slide-in-right"
+        style={{ background: 'var(--bg-surface)', borderLeft: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 h-[52px] shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+          <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Task Details</h2>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-150"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-inset)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Description */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</label>
-          {editing ? (
-            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
-              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-white" />
-          ) : (
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{task.description || 'No description'}</p>
-          )}
-        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5 scrollbar-thin">
+          {/* Title */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Title</label>
+            {editing ? (
+              <input value={title} onChange={e => setTitle(e.target.value)}
+                className={inputClass}
+                style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
+              />
+            ) : (
+              <p className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>{task.title}</p>
+            )}
+          </div>
 
-        {/* Info grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <InfoItem label="Owner" value={task.owner} />
-          <InfoItem label="Category" value={task.category} />
-          <InfoItem label="Start Date" value={new Date(task.startDate).toLocaleDateString()} />
-          <InfoItem label="Due Date" value={new Date(task.dueDate).toLocaleDateString()} />
-          <InfoItem label="Quadrant" value={task.quadrant} />
-          <InfoItem
-            label="Days Left"
-            value={daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d`}
-            highlight={daysLeft < 0 ? 'text-red-600 dark:text-red-400' : undefined}
-          />
-        </div>
+          {/* Description */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Description</label>
+            {editing ? (
+              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+                className={`${inputClass} resize-none`}
+                style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
+              />
+            ) : (
+              <p className="text-sm" style={{ color: task.description ? 'var(--text-secondary)' : 'var(--text-tertiary)' }}>
+                {task.description || 'No description'}
+              </p>
+            )}
+          </div>
 
-        {/* Timeline progress */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-            Timeline Progress: <span className={`font-bold ${progress >= 90 ? 'text-red-500' : progress >= 70 ? 'text-orange-500' : 'text-indigo-600 dark:text-indigo-400'}`}>{progress}%</span>
-          </label>
-          <div className="mt-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                progress >= 90 ? 'bg-red-500' : progress >= 70 ? 'bg-orange-400' : progress >= 40 ? 'bg-yellow-400' : 'bg-green-400'
-              }`}
-              style={{ width: `${progress}%` }}
+          {/* Info grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <InfoItem label="Owner" value={task.owner} />
+            <InfoItem label="Category" value={task.category} />
+            <InfoItem label="Start Date" value={new Date(task.startDate).toLocaleDateString()} />
+            <InfoItem label="Due Date" value={new Date(task.dueDate).toLocaleDateString()} />
+            <InfoItem label="Quadrant" value={task.quadrant} />
+            <InfoItem
+              label="Days Left"
+              value={daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d`}
+              highlight={daysLeft < 0 ? '#ef4444' : undefined}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
-            <span>{task.startDate}</span>
-            <span>{task.dueDate}</span>
+
+          {/* Timeline progress */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style={{ color: 'var(--text-tertiary)' }}>
+              Timeline Progress
+              <span className="font-bold tabular-nums" style={{ color: progress >= 90 ? '#ef4444' : progress >= 70 ? '#f97316' : 'var(--accent)' }}>{progress}%</span>
+            </label>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${progress}%`,
+                  background: progress >= 90 ? '#ef4444' : progress >= 70 ? '#f97316' : progress >= 40 ? '#f59e0b' : '#10b981',
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              <span>{task.startDate}</span>
+              <span>{task.dueDate}</span>
+            </div>
+          </div>
+
+          {/* Importance slider */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style={{ color: 'var(--text-tertiary)' }}>
+              Importance Score
+              <span className="font-bold tabular-nums" style={{ color: 'var(--accent)' }}>{importance}</span>
+            </label>
+            <input type="range" min={0} max={100} value={importance}
+              onChange={e => setImportance(Number(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-[10px] tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
+              <span>0</span><span>50</span><span>100</span>
+            </div>
+          </div>
+
+          {/* Status select */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Status</label>
+            <select
+              value={status}
+              onChange={e => setStatus(e.target.value as Task['status'])}
+              className={inputClass}
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
+            >
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="On Hold">On Hold</option>
+            </select>
+          </div>
+
+          {/* Dependencies */}
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>
+              Blocked By ({blockedBy.length})
+            </label>
+            {blockedBy.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {blockedBy.map(depId => {
+                  const depTask = allTasks.find(t => t.id === depId);
+                  return (
+                    <span key={depId} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.15)' }}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                      {depTask?.title || 'Unknown'}
+                      <button onClick={() => toggleDependency(depId)} className="font-bold opacity-60 hover:opacity-100">×</button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            {editing && otherTasks.length > 0 && (
+              <div className="max-h-32 overflow-y-auto rounded-lg scrollbar-thin" style={{ border: '1px solid var(--border)' }}>
+                {otherTasks.map(t => (
+                  <label key={t.id} className="flex items-center gap-2 px-2.5 py-2 cursor-pointer text-sm transition-colors duration-100"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <input type="checkbox" checked={blockedBy.includes(t.id)} onChange={() => toggleDependency(t.id)}
+                      className="accent-[var(--accent)] rounded" />
+                    <span className="truncate" style={{ color: 'var(--text-secondary)' }}>{t.title}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Importance slider */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-            Importance Score: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{importance}</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={importance}
-            onChange={e => setImportance(Number(e.target.value))}
-            className="mt-1 w-full accent-indigo-600"
-          />
-          <div className="flex justify-between text-[10px] text-gray-400">
-            <span>0</span><span>50</span><span>100</span>
-          </div>
-        </div>
-
-        {/* Status select */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</label>
-          <select
-            value={status}
-            onChange={e => setStatus(e.target.value as Task['status'])}
-            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-white"
-          >
-            <option value="Not Started">Not Started</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="On Hold">On Hold</option>
-          </select>
-        </div>
-
-        {/* Dependencies */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1 block">
-            Blocked By ({blockedBy.length})
-          </label>
-          {blockedBy.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {blockedBy.map(depId => {
-                const depTask = allTasks.find(t => t.id === depId);
-                return (
-                  <span key={depId} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-                    🔒 {depTask?.title || 'Unknown'}
-                    <button onClick={() => toggleDependency(depId)} className="text-red-500 hover:text-red-700 font-bold">×</button>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          {editing && otherTasks.length > 0 && (
-            <div className="max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-              {otherTasks.map(t => (
-                <label key={t.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer text-sm">
-                  <input
-                    type="checkbox"
-                    checked={blockedBy.includes(t.id)}
-                    onChange={() => toggleDependency(t.id)}
-                    className="accent-red-500"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300 truncate">{t.title}</span>
-                </label>
-              ))}
-            </div>
+        {/* Footer */}
+        <div className="px-5 py-3.5 flex gap-2 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
+          {!editing ? (
+            <>
+              <button onClick={() => setEditing(true)}
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                Edit
+              </button>
+              <button onClick={handleSave}
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium text-white transition-all duration-150"
+                style={{ background: 'var(--accent)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
+                Save Changes
+              </button>
+              <button onClick={() => onDelete(task.id)}
+                className="rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                style={{ border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                Delete
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setEditing(false)}
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                Cancel
+              </button>
+              <button onClick={handleSave}
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium text-white transition-all duration-150"
+                style={{ background: 'var(--accent)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
+                Save
+              </button>
+            </>
           )}
         </div>
       </div>
-
-      {/* Footer actions */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-        {!editing ? (
-          <>
-            <button onClick={() => setEditing(true)}
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
-              Edit
-            </button>
-            <button onClick={handleSave}
-              className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-medium text-white">
-              Save Changes
-            </button>
-            <button onClick={() => onDelete(task.id)}
-              className="rounded-lg border border-red-300 dark:border-red-600 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-              Delete
-            </button>
-          </>
-        ) : (
-          <>
-            <button onClick={() => setEditing(false)}
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
-              Cancel
-            </button>
-            <button onClick={handleSave}
-              className="flex-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-medium text-white">
-              Save
-            </button>
-          </>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
 
 function InfoItem({ label, value, highlight }: { label: string; value: string; highlight?: string }) {
   return (
-    <div>
-      <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase">{label}</span>
-      <p className={`text-sm font-medium ${highlight || 'text-gray-800 dark:text-gray-200'}`}>{value}</p>
+    <div className="rounded-lg px-3 py-2.5" style={{ background: 'var(--bg-inset)' }}>
+      <span className="text-[10px] font-semibold uppercase tracking-wider block mb-0.5" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+      <p className="text-sm font-medium" style={{ color: highlight || 'var(--text-primary)' }}>{value}</p>
     </div>
   );
 }

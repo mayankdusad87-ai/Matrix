@@ -42,10 +42,10 @@ function computeOffsets(tasks: Task[]): Map<string, { dx: number; dy: number }> 
 }
 
 const Q = [
-  { key: 'Do Now', dot: 'bg-red-500' },
-  { key: 'Schedule', dot: 'bg-blue-500' },
-  { key: 'Delegate', dot: 'bg-amber-500' },
-  { key: 'Deprioritize', dot: 'bg-gray-400' },
+  { key: 'Do Now', color: '#ef4444', darkColor: '#f87171' },
+  { key: 'Schedule', color: '#3b82f6', darkColor: '#60a5fa' },
+  { key: 'Delegate', color: '#f59e0b', darkColor: '#fbbf24' },
+  { key: 'Deprioritize', color: '#9ca3af', darkColor: '#6b7280' },
 ] as const;
 
 /* ── Settings gear dropdown ── */
@@ -61,13 +61,11 @@ function SettingsDropdown({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click (deferred to avoid catching the opening click)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    // Defer so the current click event doesn't immediately close
     const timer = setTimeout(() => document.addEventListener('mousedown', handler), 0);
     return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler); };
   }, [open]);
@@ -80,11 +78,13 @@ function SettingsDropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-          open || hasCustom
-            ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
-            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-600 dark:hover:text-gray-300'
-        }`}
+        className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150"
+        style={{
+          background: open || hasCustom ? 'var(--accent-subtle)' : 'transparent',
+          color: open || hasCustom ? 'var(--accent)' : 'var(--text-tertiary)',
+        }}
+        onMouseEnter={e => { if (!open && !hasCustom) e.currentTarget.style.background = 'var(--bg-inset)'; }}
+        onMouseLeave={e => { if (!open && !hasCustom) e.currentTarget.style.background = 'transparent'; }}
         title="Matrix settings"
       >
         <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -94,9 +94,12 @@ function SettingsDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[280px] bg-white dark:bg-[#1a1d26] rounded-xl shadow-xl border border-gray-200 dark:border-white/[0.08] z-50 overflow-hidden">
+        <div
+          className="absolute right-0 top-full mt-2 w-[280px] rounded-xl z-50 overflow-hidden animate-fade-in"
+          style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}
+        >
           <div className="px-4 pt-3 pb-2">
-            <h4 className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+            <h4 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
               Business Rules
             </h4>
           </div>
@@ -104,16 +107,16 @@ function SettingsDropdown({
           {/* Importance Median */}
           <div className="px-4 pb-3">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+              <label className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
                 Importance threshold
               </label>
               <button
                 onClick={() => onChange({ ...settings, medianOverride: isCustomMedian ? null : autoMedian })}
-                className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${
-                  isCustomMedian
-                    ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
-                    : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
-                }`}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors duration-150"
+                style={{
+                  background: isCustomMedian ? 'var(--accent-subtle)' : 'var(--bg-inset)',
+                  color: isCustomMedian ? 'var(--accent)' : 'var(--text-tertiary)',
+                }}
               >
                 {isCustomMedian ? 'Custom' : 'Auto'}
               </button>
@@ -121,64 +124,63 @@ function SettingsDropdown({
             {isCustomMedian ? (
               <div className="flex items-center gap-3">
                 <input
-                  type="range"
-                  min={10}
-                  max={90}
+                  type="range" min={10} max={90}
                   value={settings.medianOverride ?? autoMedian}
                   onChange={e => onChange({ ...settings, medianOverride: Number(e.target.value) })}
-                  className="flex-1 accent-indigo-500 h-1.5"
+                  className="flex-1 h-1.5"
                 />
-                <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums w-8 text-right">
+                <span className="text-sm font-semibold tabular-nums w-8 text-right" style={{ color: 'var(--accent)' }}>
                   {settings.medianOverride}
                 </span>
               </div>
             ) : (
-              <p className="text-[12px] text-gray-400 dark:text-gray-500">
-                Auto-calculated median: <span className="font-semibold text-gray-600 dark:text-gray-300">{autoMedian}</span>
+              <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                Auto-calculated median: <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{autoMedian}</span>
               </p>
             )}
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-              Tasks above this line are &ldquo;high importance&rdquo;
+            <p className="text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              Tasks above this line are "high importance"
             </p>
           </div>
 
-          <div className="border-t border-gray-100 dark:border-white/[0.05]" />
+          <div style={{ borderTop: '1px solid var(--border-subtle)' }} />
 
           {/* Urgency Days */}
           <div className="px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+              <label className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
                 Urgency threshold
               </label>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 tabular-nums">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full tabular-nums" style={{ background: 'var(--bg-inset)', color: 'var(--text-tertiary)' }}>
                 {settings.urgencyDays}d
               </span>
             </div>
             <div className="flex items-center gap-3">
               <input
-                type="range"
-                min={1}
-                max={30}
+                type="range" min={1} max={30}
                 value={settings.urgencyDays}
                 onChange={e => onChange({ ...settings, urgencyDays: Number(e.target.value) })}
-                className="flex-1 accent-indigo-500 h-1.5"
+                className="flex-1 h-1.5"
               />
-              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums w-8 text-right">
+              <span className="text-sm font-semibold tabular-nums w-8 text-right" style={{ color: 'var(--accent)' }}>
                 {settings.urgencyDays}d
               </span>
             </div>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
               Tasks due within {settings.urgencyDays} day{settings.urgencyDays !== 1 ? 's' : ''} move to the urgent zone
             </p>
           </div>
 
           {hasCustom && (
             <>
-              <div className="border-t border-gray-100 dark:border-white/[0.05]" />
+              <div style={{ borderTop: '1px solid var(--border-subtle)' }} />
               <div className="px-4 py-2.5">
                 <button
                   onClick={() => { onChange({ medianOverride: null, urgencyDays: 7 }); setOpen(false); }}
-                  className="text-[12px] text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  className="text-[12px] font-medium transition-colors duration-150"
+                  style={{ color: 'var(--text-tertiary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
                 >
                   Reset to defaults
                 </button>
@@ -195,7 +197,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
   const containerRef = useRef<HTMLDivElement>(null);
 
   const urgencyDays = matrixSettings.urgencyDays;
-  const URGENCY_DIVIDER = 70; // visual position of the urgency line (always at 70% of the x-axis)
+  const URGENCY_DIVIDER = 70;
 
   const autoMedian = useMemo(() => {
     if (tasks.length > 0 && tasks[0].autoMedian !== undefined) return tasks[0].autoMedian;
@@ -245,7 +247,6 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     return counts;
   }, [tasks]);
 
-  // On mobile, collapse overflow on touch
   const [containerH, setContainerH] = useState(600);
   const measureContainer = useCallback(() => {
     if (containerRef.current) setContainerH(containerRef.current.clientHeight);
@@ -285,22 +286,29 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     };
   }, [draggingMedian, handleMedianDrag]);
 
+  const isDark = document.documentElement.classList.contains('dark');
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-2 md:px-3 pb-2 md:pb-3 gap-1 md:gap-2">
+    <div className="flex-1 flex flex-col min-h-0 px-2 md:px-4 pb-2 md:pb-4 gap-1.5 md:gap-2.5">
       {/* ── Legend + settings ── */}
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <div className="flex items-center gap-2 md:gap-3.5 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-2 pt-2">
+        <div className="flex items-center gap-2.5 md:gap-4 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
           {Q.map(q => (
-            <span key={q.key} className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-              <span className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-[3px] ${q.dot} inline-block shrink-0`} />
-              <span className="text-gray-500 dark:text-gray-400">{q.key}</span>
-              <span className="text-gray-300 dark:text-gray-600 font-bold tabular-nums">{quadrantCounts[q.key]}</span>
+            <span key={q.key} className="flex items-center gap-1.5 whitespace-nowrap">
+              <span
+                className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0"
+                style={{ background: isDark ? q.darkColor : q.color }}
+              />
+              <span style={{ color: 'var(--text-secondary)' }}>{q.key}</span>
+              <span className="font-bold tabular-nums" style={{ color: 'var(--text-quaternary)' }}>{quadrantCounts[q.key]}</span>
             </span>
           ))}
           {quadrantCounts.overdue > 0 && (
-            <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
-              <span className="text-xs">⚠</span>
-              <span className="font-semibold">{quadrantCounts.overdue} overdue</span>
+            <span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-semibold">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              {quadrantCounts.overdue} overdue
             </span>
           )}
         </div>
@@ -309,37 +317,33 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
 
       {/* ── Matrix grid ── */}
       <div className="flex-1 flex justify-center min-h-[280px] md:min-h-0">
-        <div className="flex w-full max-w-6xl gap-0">
+        <div className="flex w-full max-w-7xl gap-0">
           {/* Y-axis labels */}
-          <div className="flex flex-col justify-between py-1 pr-1 md:pr-2 text-[9px] md:text-[11px] font-medium text-gray-300 dark:text-gray-600 w-6 md:w-9 shrink-0 tabular-nums">
+          <div className="flex flex-col justify-between py-1 pr-1 md:pr-2 text-[9px] md:text-[11px] font-medium w-6 md:w-9 shrink-0 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
             {[...yLabels].reverse().map(v => (
-              <span key={v} className={`text-right leading-none ${v === median ? 'font-bold text-indigo-500 dark:text-indigo-400' : ''}`}>{v}</span>
+              <span key={v} className={`text-right leading-none ${v === median ? 'font-bold' : ''}`} style={v === median ? { color: 'var(--accent)' } : undefined}>{v}</span>
             ))}
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
             <div
               ref={containerRef}
-              className="relative flex-1 border border-gray-200/80 dark:border-white/[0.06] rounded-xl md:rounded-2xl overflow-hidden
-                bg-white dark:bg-[#111318] shadow-sm"
+              className="relative flex-1 rounded-xl md:rounded-2xl overflow-hidden"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
             >
               {/* Quadrant fills */}
-              <div className="absolute top-0 right-0 pointer-events-none"
-                style={{ width: urgW, height: impH, background: 'linear-gradient(135deg, rgba(239,68,68,0.04) 0%, rgba(239,68,68,0.08) 100%)' }} />
-              <div className="absolute top-0 left-0 pointer-events-none"
-                style={{ width: notUrgW, height: impH, background: 'linear-gradient(135deg, rgba(59,130,246,0.03) 0%, rgba(59,130,246,0.06) 100%)' }} />
-              <div className="absolute bottom-0 right-0 pointer-events-none"
-                style={{ width: urgW, height: impL, background: 'linear-gradient(135deg, rgba(245,158,11,0.03) 0%, rgba(245,158,11,0.06) 100%)' }} />
-              <div className="absolute bottom-0 left-0 pointer-events-none"
-                style={{ width: notUrgW, height: impL, background: 'linear-gradient(135deg, rgba(148,163,184,0.02) 0%, rgba(148,163,184,0.04) 100%)' }} />
+              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: `linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.07) 100%)` }} />
+              <div className="absolute top-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impH, background: `linear-gradient(135deg, rgba(59,130,246,0.02) 0%, rgba(59,130,246,0.05) 100%)` }} />
+              <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: urgW, height: impL, background: `linear-gradient(135deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.05) 100%)` }} />
+              <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impL, background: `linear-gradient(135deg, rgba(148,163,184,0.01) 0%, rgba(148,163,184,0.03) 100%)` }} />
 
               {/* Horizontal grid */}
               {yLabels.map(v => (
                 v !== median ? (
                   <div
                     key={`h-${v}`}
-                    className="absolute left-0 right-0 border-t border-gray-100 dark:border-white/[0.03]"
-                    style={{ bottom: `${v}%` }}
+                    className="absolute left-0 right-0"
+                    style={{ bottom: `${v}%`, borderTop: '1px solid var(--border-subtle)' }}
                   />
                 ) : null
               ))}
@@ -353,14 +357,11 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 onMouseEnter={() => setHoveringMedian(true)}
                 onMouseLeave={() => { if (!draggingMedian) setHoveringMedian(false); }}
               >
-                {/* Hit area — tall invisible strip for easy grabbing */}
                 <div className="absolute left-0 right-0 -top-3 h-6 md:-top-4 md:h-8" />
-                {/* Visible line */}
-                <div className={`absolute left-0 right-0 top-0 border-t-[1.5px] border-dashed transition-colors ${
-                  draggingMedian || hoveringMedian
-                    ? 'border-indigo-500 dark:border-indigo-400'
-                    : 'border-indigo-400/40 dark:border-indigo-500/30'
-                }`} />
+                <div
+                  className="absolute left-0 right-0 top-0 border-t-[1.5px] border-dashed transition-colors duration-150"
+                  style={{ borderColor: draggingMedian || hoveringMedian ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.25)' : 'rgba(99,102,241,0.3)' }}
+                />
               </div>
 
               {/* Median label */}
@@ -370,11 +371,15 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 onMouseDown={e => { e.preventDefault(); setDraggingMedian(true); }}
                 onTouchStart={() => setDraggingMedian(true)}
               >
-                <span className={`text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] -translate-y-1/2 inline-flex items-center gap-0.5 border transition-colors ${
-                  draggingMedian || hoveringMedian
-                    ? 'text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/20 border-indigo-300 dark:border-indigo-500/50 shadow-sm'
-                    : 'text-indigo-500 dark:text-indigo-400 bg-white/95 dark:bg-[#111318]/95 border-indigo-200/50 dark:border-indigo-700/40'
-                }`}>
+                <span
+                  className="text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] -translate-y-1/2 inline-flex items-center gap-0.5 transition-all duration-150"
+                  style={{
+                    color: 'var(--accent)',
+                    background: draggingMedian || hoveringMedian ? 'var(--accent-muted)' : 'var(--bg-surface)',
+                    border: `1px solid ${draggingMedian || hoveringMedian ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.25)'}`,
+                    boxShadow: draggingMedian || hoveringMedian ? 'var(--shadow-sm)' : 'none',
+                  }}
+                >
                   <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" d="M7 8l5-4 5 4M7 16l5 4 5-4" />
                   </svg>
@@ -386,18 +391,26 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               {xLabels.map(({ pct }) => (
                 <div
                   key={`v-${pct}`}
-                  className={`absolute top-0 bottom-0 ${
-                    pct === URGENCY_DIVIDER
-                      ? 'border-l-[1.5px] border-dashed border-indigo-400/40 dark:border-indigo-500/30 z-[5]'
-                      : 'border-l border-gray-100 dark:border-white/[0.03]'
-                  }`}
-                  style={{ left: `${pct}%` }}
+                  className="absolute top-0 bottom-0 z-[5]"
+                  style={{
+                    left: `${pct}%`,
+                    borderLeft: pct === URGENCY_DIVIDER
+                      ? `1.5px dashed ${isDark ? 'rgba(129,140,248,0.25)' : 'rgba(99,102,241,0.3)'}`
+                      : '1px solid var(--border-subtle)',
+                  }}
                 />
               ))}
 
               {/* Urgency label */}
               <div className="absolute bottom-1 md:bottom-2.5 z-[6] pointer-events-none" style={{ left: `${URGENCY_DIVIDER}%` }}>
-                <span className="text-[8px] md:text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 bg-white/95 dark:bg-[#111318]/95 px-1 md:px-1.5 py-0.5 rounded-[4px] translate-x-0.5 md:translate-x-1 inline-block border border-indigo-200/50 dark:border-indigo-700/40">
+                <span
+                  className="text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] translate-x-0.5 md:translate-x-1 inline-block"
+                  style={{
+                    color: 'var(--accent)',
+                    background: 'var(--bg-surface)',
+                    border: `1px solid ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.25)'}`,
+                  }}
+                >
                   {urgencyDays}d
                 </span>
               </div>
@@ -405,16 +418,16 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               {/* Quadrant watermarks */}
               <div className="absolute inset-0 pointer-events-none select-none z-0">
                 <div className="absolute flex items-center justify-center" style={{ top: 0, right: 0, width: urgW, height: impH }}>
-                  <span className="text-sm md:text-2xl font-black tracking-wider text-red-200/25 dark:text-red-800/15 uppercase">Do Now</span>
+                  <span className="text-sm md:text-2xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.08)' }}>Do Now</span>
                 </div>
                 <div className="absolute flex items-center justify-center" style={{ top: 0, left: 0, width: notUrgW, height: impH }}>
-                  <span className="text-base md:text-3xl font-black tracking-wider text-blue-200/25 dark:text-blue-800/15 uppercase">Schedule</span>
+                  <span className="text-base md:text-3xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.08)' }}>Schedule</span>
                 </div>
                 <div className="absolute flex items-center justify-center" style={{ bottom: 0, right: 0, width: urgW, height: impL }}>
-                  <span className="text-xs md:text-xl font-black tracking-wider text-amber-200/25 dark:text-amber-800/15 uppercase">Delegate</span>
+                  <span className="text-xs md:text-xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.08)' }}>Delegate</span>
                 </div>
                 <div className="absolute flex items-center justify-center" style={{ bottom: 0, left: 0, width: notUrgW, height: impL }}>
-                  <span className="text-xs md:text-xl font-black tracking-wider text-gray-200/30 dark:text-gray-700/20 uppercase">Deprioritize</span>
+                  <span className="text-xs md:text-xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(148,163,184,0.1)' }}>Deprioritize</span>
                 </div>
               </div>
 
@@ -436,21 +449,21 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
             </div>
 
             {/* X-axis */}
-            <div className="flex justify-between pt-1 md:pt-1.5 text-[9px] md:text-[11px] font-medium text-gray-300 dark:text-gray-600 px-0.5 md:px-1 tabular-nums">
+            <div className="flex justify-between pt-1 md:pt-1.5 text-[9px] md:text-[11px] font-medium px-0.5 md:px-1 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
               {xLabels.map(({ pct, label }) => (
-                <span key={pct} className={pct === URGENCY_DIVIDER ? 'font-bold text-indigo-500 dark:text-indigo-400' : ''}>
+                <span key={pct} style={pct === URGENCY_DIVIDER ? { color: 'var(--accent)', fontWeight: 700 } : undefined}>
                   {label}
                 </span>
               ))}
             </div>
-            <div className="text-center text-[9px] md:text-[11px] font-medium text-gray-300 dark:text-gray-600 tracking-wide">
+            <div className="text-center text-[9px] md:text-[11px] font-medium tracking-wide" style={{ color: 'var(--text-quaternary)' }}>
               Urgency →
             </div>
           </div>
 
           {/* Y-axis label */}
           <div className="flex items-center ml-0.5 md:ml-1.5">
-            <span className="text-[9px] md:text-[11px] font-medium text-gray-300 dark:text-gray-600 [writing-mode:vertical-rl] rotate-180 tracking-wide">
+            <span className="text-[9px] md:text-[11px] font-medium [writing-mode:vertical-rl] rotate-180 tracking-wide" style={{ color: 'var(--text-quaternary)' }}>
               ← Importance
             </span>
           </div>

@@ -24,29 +24,41 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
         onDismissRef.current();
       }
     }, 50);
-
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] animate-slide-up">
-      <div className="bg-[#1a1d26] dark:bg-white text-gray-100 dark:text-gray-900 rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3 min-w-[280px] max-w-[90vw]">
-        <span className="text-red-400 dark:text-red-600 text-lg">🗑️</span>
+      <div
+        className="rounded-xl px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[90vw]"
+        style={{
+          background: 'var(--bg-surface-elevated)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-xl)',
+          color: 'var(--text-primary)',
+        }}
+      >
+        <svg className="w-5 h-5 shrink-0" style={{ color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">
-            Deleted &ldquo;{task.title}&rdquo;
+            Deleted "{task.title}"
           </p>
-          <div className="mt-1 h-1 bg-gray-700 dark:bg-gray-300 rounded-full overflow-hidden">
+          <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
             <div
-              className="h-full bg-indigo-400 dark:bg-indigo-600 rounded-full transition-all duration-75"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full transition-all duration-75"
+              style={{ width: `${progress}%`, background: 'var(--accent)' }}
             />
           </div>
         </div>
         <button
           onClick={onUndo}
-          className="shrink-0 px-3 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold transition-colors"
+          className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-bold text-white transition-all duration-150"
+          style={{ background: 'var(--accent)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >
           Undo
         </button>

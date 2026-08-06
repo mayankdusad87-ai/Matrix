@@ -9,6 +9,26 @@ import Analytics from './components/Analytics';
 import UndoToast from './components/UndoToast';
 import type { Task } from './types';
 
+const tabs = [
+  { key: 'matrix' as const, label: 'Matrix', shortLabel: 'Matrix', icon: (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+      <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+    </svg>
+  )},
+  { key: 'input' as const, label: 'Tasks', shortLabel: 'Tasks', icon: (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+      <rect x="9" y="3" width="6" height="4" rx="1" /><path strokeLinecap="round" d="M9 14l2 2 4-4" />
+    </svg>
+  )},
+  { key: 'analytics' as const, label: 'Analytics', shortLabel: 'Stats', icon: (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  )},
+];
+
 export default function App() {
   const {
     tasks, allTasks, stats, loading, filters, setFilters,
@@ -37,63 +57,93 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#fafbfc] dark:bg-[#0a0b0f]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm font-medium text-gray-400 dark:text-gray-500">Loading tasks…</span>
+      <div className="h-screen flex items-center justify-center" style={{ background: 'var(--bg-page)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--accent)' }}>
+              <div className="w-full h-full animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--accent)' }} />
+            </div>
+          </div>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>Loading workspace…</span>
         </div>
       </div>
     );
   }
 
-  const tabs = [
-    { key: 'matrix' as const, label: 'Matrix', icon: '◆' },
-    { key: 'input' as const, label: 'Tasks', icon: '☰' },
-    { key: 'analytics' as const, label: 'Analytics', icon: '◎' },
-  ];
-
   return (
-    <div className="h-screen flex flex-col bg-[#fafbfc] dark:bg-[#0a0b0f] text-gray-900 dark:text-gray-100 transition-colors">
-      {/* ── Top bar ── */}
-      <header className="flex items-center justify-between px-4 md:px-5 h-12 border-b border-gray-200/80 dark:border-white/[0.06] bg-white dark:bg-[#111318] shrink-0">
-        <h1 className="text-[15px] font-semibold tracking-[-0.01em]">
-          <span className="text-indigo-600 dark:text-indigo-400">Priority</span>
-          <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">Matrix</span>
-        </h1>
+    <div className="h-screen flex flex-col" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+      {/* ── Header ── */}
+      <header
+        className="flex items-center justify-between px-4 md:px-5 h-[52px] shrink-0 z-20"
+        style={{ background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
+            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+              <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+            </svg>
+          </div>
+          <span className="text-[15px] font-semibold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
+            Priority Matrix
+          </span>
+        </div>
 
-        <div className="flex items-center gap-0.5">
-          {/* Tab pills */}
-          <nav className="flex bg-gray-100/80 dark:bg-white/[0.04] rounded-lg p-[3px] mr-2">
+        {/* Navigation + theme */}
+        <div className="flex items-center gap-1">
+          <nav className="flex items-center rounded-lg p-0.5 mr-1" style={{ background: 'var(--bg-inset)' }}>
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-2.5 md:px-3.5 py-[5px] text-[11px] md:text-[12px] font-medium rounded-md transition-all ${
-                  activeTab === tab.key
-                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
+                className="relative flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md transition-all duration-200"
+                style={activeTab === tab.key ? {
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-primary)',
+                  boxShadow: 'var(--shadow-sm)',
+                } : {
+                  color: 'var(--text-tertiary)',
+                }}
               >
                 <span className="md:hidden">{tab.icon}</span>
-                <span className="hidden md:inline">{tab.label}</span>
+                <span className="hidden md:flex items-center gap-1.5">
+                  {tab.icon}
+                  {tab.label}
+                </span>
               </button>
             ))}
           </nav>
 
           <button
             onClick={() => setDark(!dark)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-inset)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             title="Toggle theme"
           >
-            <span className="text-sm">{dark ? '☀️' : '🌙'}</span>
+            {dark ? (
+              <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <circle cx="12" cy="12" r="5" /><path strokeLinecap="round" d="M12 1v2m0 18v2m-9-11H1m22 0h-2m-2.636-7.364L16.95 5.05M7.05 5.05 5.636 3.636m0 16.728L7.05 18.95m9.9 0 1.414 1.414" />
+              </svg>
+            ) : (
+              <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+              </svg>
+            )}
           </button>
         </div>
       </header>
 
       {/* ── KPIs ── */}
-      <div className="max-w-6xl w-full mx-auto">
-        <Dashboard stats={stats} />
-      </div>
+      {activeTab === 'matrix' && (
+        <div className="w-full" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="max-w-7xl w-full mx-auto">
+            <Dashboard stats={stats} />
+          </div>
+        </div>
+      )}
 
       {/* ── Tab content ── */}
       {activeTab === 'input' ? (
@@ -110,7 +160,7 @@ export default function App() {
         <Analytics tasks={allTasks} />
       ) : (
         <>
-          <div className="max-w-6xl w-full mx-auto">
+          <div className="max-w-7xl w-full mx-auto" style={{ borderBottom: '1px solid var(--border)' }}>
             <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setActiveTab('input')} />
           </div>
           <Matrix
@@ -123,6 +173,7 @@ export default function App() {
         </>
       )}
 
+      {/* ── Side panel ── */}
       {selectedTask && (
         <TaskPanel
           task={selectedTask}
