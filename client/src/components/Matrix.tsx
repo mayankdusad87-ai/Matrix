@@ -256,6 +256,35 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     return () => window.removeEventListener('resize', measureContainer);
   }, [measureContainer]);
 
+  /* ── Draggable median line ── */
+  const [draggingMedian, setDraggingMedian] = useState(false);
+  const [hoveringMedian, setHoveringMedian] = useState(false);
+
+  const handleMedianDrag = useCallback((clientY: number) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.round(Math.max(5, Math.min(95, (1 - (clientY - rect.top) / rect.height) * 100)));
+    onSettingsChange({ ...matrixSettings, medianOverride: pct });
+  }, [matrixSettings, onSettingsChange]);
+
+  useEffect(() => {
+    if (!draggingMedian) return;
+    const onMove = (e: MouseEvent) => { e.preventDefault(); handleMedianDrag(e.clientY); };
+    const onTouchMove = (e: TouchEvent) => { handleMedianDrag(e.touches[0].clientY); };
+    const onUp = () => { setDraggingMedian(false); setHoveringMedian(false); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, [draggingMedian, handleMedianDrag]);
+
   return (
     <div className="flex-1 flex flex-col min-h-0 px-2 md:px-3 pb-2 md:pb-3 gap-1 md:gap-2">
       {/* ── Legend + settings ── */}
@@ -306,21 +335,50 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
 
               {/* Horizontal grid */}
               {yLabels.map(v => (
-                <div
-                  key={`h-${v}`}
-                  className={`absolute left-0 right-0 ${
-                    v === median
-                      ? 'border-t-[1.5px] border-dashed border-indigo-400/40 dark:border-indigo-500/30 z-[5]'
-                      : 'border-t border-gray-100 dark:border-white/[0.03]'
-                  }`}
-                  style={{ bottom: `${v}%` }}
-                />
+                v !== median ? (
+                  <div
+                    key={`h-${v}`}
+                    className="absolute left-0 right-0 border-t border-gray-100 dark:border-white/[0.03]"
+                    style={{ bottom: `${v}%` }}
+                  />
+                ) : null
               ))}
 
+              {/* Draggable median line */}
+              <div
+                className={`absolute left-0 right-0 z-[8] group select-none ${draggingMedian ? 'cursor-grabbing' : 'cursor-ns-resize'}`}
+                style={{ bottom: `${median}%` }}
+                onMouseDown={e => { e.preventDefault(); setDraggingMedian(true); }}
+                onTouchStart={() => setDraggingMedian(true)}
+                onMouseEnter={() => setHoveringMedian(true)}
+                onMouseLeave={() => { if (!draggingMedian) setHoveringMedian(false); }}
+              >
+                {/* Hit area — tall invisible strip for easy grabbing */}
+                <div className="absolute left-0 right-0 -top-3 h-6 md:-top-4 md:h-8" />
+                {/* Visible line */}
+                <div className={`absolute left-0 right-0 top-0 border-t-[1.5px] border-dashed transition-colors ${
+                  draggingMedian || hoveringMedian
+                    ? 'border-indigo-500 dark:border-indigo-400'
+                    : 'border-indigo-400/40 dark:border-indigo-500/30'
+                }`} />
+              </div>
+
               {/* Median label */}
-              <div className="absolute left-1 md:left-2.5 z-[6] pointer-events-none" style={{ bottom: `${median}%` }}>
-                <span className="text-[8px] md:text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 bg-white/95 dark:bg-[#111318]/95 px-1 md:px-1.5 py-0.5 rounded-[4px] -translate-y-1/2 inline-block border border-indigo-200/50 dark:border-indigo-700/40">
-                  <span className="hidden md:inline">Threshold: </span>{median}
+              <div
+                className={`absolute left-1 md:left-2.5 z-[9] select-none ${draggingMedian ? 'cursor-grabbing pointer-events-none' : 'cursor-ns-resize'}`}
+                style={{ bottom: `${median}%` }}
+                onMouseDown={e => { e.preventDefault(); setDraggingMedian(true); }}
+                onTouchStart={() => setDraggingMedian(true)}
+              >
+                <span className={`text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] -translate-y-1/2 inline-flex items-center gap-0.5 border transition-colors ${
+                  draggingMedian || hoveringMedian
+                    ? 'text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/20 border-indigo-300 dark:border-indigo-500/50 shadow-sm'
+                    : 'text-indigo-500 dark:text-indigo-400 bg-white/95 dark:bg-[#111318]/95 border-indigo-200/50 dark:border-indigo-700/40'
+                }`}>
+                  <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M7 8l5-4 5 4M7 16l5 4 5-4" />
+                  </svg>
+                  <span className="hidden md:inline">Median: </span>{median}
                 </span>
               </div>
 
