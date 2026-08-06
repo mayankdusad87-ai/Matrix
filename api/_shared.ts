@@ -45,7 +45,7 @@ const taskSchema = new mongoose.Schema(
 export const Task = mongoose.models.Task || mongoose.model('Task', taskSchema);
 
 // --- Calculations ---
-export const URGENCY_THRESHOLD = 7;
+export const DEFAULT_URGENCY_DAYS = 7;
 
 export function calculateDaysRemaining(dueDate: string | Date, today: Date = new Date()): number {
   const due = new Date(dueDate);
@@ -62,9 +62,9 @@ export function calculateMedian(values: number[]): number {
   return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
 }
 
-function determineQuadrant(importanceScore: number, daysRemaining: number, median: number): string {
+function determineQuadrant(importanceScore: number, daysRemaining: number, median: number, urgencyDays: number): string {
   const highImportance = importanceScore >= median;
-  const urgent = daysRemaining <= URGENCY_THRESHOLD;
+  const urgent = daysRemaining <= urgencyDays;
   if (highImportance && urgent) return 'Do Now';
   if (highImportance && !urgent) return 'Schedule';
   if (!highImportance && urgent) return 'Delegate';
@@ -74,35 +74,39 @@ function determineQuadrant(importanceScore: number, daysRemaining: number, media
 export interface TaskLike {
   dueDate: string;
   importanceScore: number;
+  startDate?: string;
   _id?: unknown;
   id?: unknown;
   [key: string]: unknown;
 }
 
-export function computeFields(task: TaskLike, median: number, maxDays: number) {
+export function computeFields(task: TaskLike, median: number, maxDays: number, urgencyDays: number = DEFAULT_URGENCY_DAYS) {
   const today = new Date();
   const daysRemaining = calculateDaysRemaining(task.dueDate, today);
-  const quadrant = determineQuadrant(task.importanceScore, daysRemaining, median);
+  const quadrant = determineQuadrant(task.importanceScore, daysRemaining, median, urgencyDays);
 
   let x: number;
   if (daysRemaining <= 0) {
     x = 100;
-  } else if (daysRemaining <= URGENCY_THRESHOLD) {
-    x = 70 + (1 - daysRemaining / URGENCY_THRESHOLD) * 30;
+  } else if (daysRemaining <= urgencyDays) {
+    x = 70 + (1 - daysRemaining / urgencyDays) * 30;
   } else {
-    const nonUrgentRange = Math.max(maxDays - URGENCY_THRESHOLD, 1);
-    x = (1 - (daysRemaining - URGENCY_THRESHOLD) / nonUrgentRange) * 70;
+    const nonUrgentRange = Math.max(maxDays - urgencyDays, 1);
+    x = (1 - (daysRemaining - urgencyDays) / nonUrgentRange) * 70;
   }
   x = Math.min(100, Math.max(0, Math.round(x * 100) / 100));
 
   // Timeline progress: how far between startDate → dueDate
-  const startDate = new Date(task.startDate as string);
+  const startDate = task.startDate ? new Date(task.startDate) : null;
   const dueDate = new Date(task.dueDate);
-  const totalDuration = dueDate.getTime() - startDate.getTime();
-  const elapsed = today.getTime() - startDate.getTime();
-  const timelineProgress = totalDuration > 0
-    ? Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
-    : 100;
+  let timelineProgress = 100;
+  if (startDate) {
+    const totalDuration = dueDate.getTime() - startDate.getTime();
+    const elapsed = today.getTime() - startDate.getTime();
+    timelineProgress = totalDuration > 0
+      ? Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
+      : 100;
+  }
 
   return {
     ...task,
@@ -114,8 +118,16 @@ export function computeFields(task: TaskLike, median: number, maxDays: number) {
     quadrant,
     isOverdue: daysRemaining < 0,
     median,
+    urgencyDays,
     timelineProgress,
   };
+}
+
+/** Parse optional median & urgencyDays overrides from query params */
+export function parseOverrides(query: Record<string, string | string[] | undefined>) {
+  const medianOverride = query.median ? Number(query.median) : null;
+  const urgencyDays = query.urgencyDays ? Number(query.urgencyDays) : DEFAULT_URGENCY_DAYS;
+  return { medianOverride: medianOverride !== null && !isNaN(medianOverride) ? medianOverride : null, urgencyDays };
 }
 
 export function setCors(res: { setHeader: (key: string, value: string) => void }) {

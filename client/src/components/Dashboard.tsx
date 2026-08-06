@@ -1,33 +1,26 @@
 import type { TaskStats } from '../types';
 
-const kpis: { key: keyof TaskStats; label: string; accent: string; icon: string }[] = [
-  { key: 'total', label: 'Total', accent: 'border-indigo-400 dark:border-indigo-500', icon: '📋' },
-  { key: 'completed', label: 'Done', accent: 'border-emerald-400 dark:border-emerald-500', icon: '✓' },
-  { key: 'inProgress', label: 'Active', accent: 'border-sky-400 dark:border-sky-500', icon: '⏳' },
-  { key: 'overdue', label: 'Overdue', accent: 'border-red-400 dark:border-red-500', icon: '!' },
-  { key: 'dueThisWeek', label: 'This Week', accent: 'border-amber-400 dark:border-amber-500', icon: '📅' },
+const kpis: { key: keyof TaskStats; label: string; color: string }[] = [
+  { key: 'total', label: 'Total', color: 'text-gray-900 dark:text-gray-100' },
+  { key: 'completed', label: 'Done', color: 'text-emerald-600 dark:text-emerald-400' },
+  { key: 'inProgress', label: 'Active', color: 'text-blue-600 dark:text-blue-400' },
+  { key: 'overdue', label: 'Overdue', color: 'text-red-600 dark:text-red-400' },
+  { key: 'dueThisWeek', label: 'This Week', color: 'text-amber-600 dark:text-amber-400' },
 ];
 
 export default function Dashboard({ stats }: { stats: TaskStats | null }) {
   if (!stats) return null;
 
   return (
-    <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
-      {kpis.map(({ key, label, accent, icon }) => (
-        <div
-          key={key}
-          className={`flex items-center gap-2 min-w-[90px] flex-1 rounded-lg border-l-[3px] ${accent}
-            bg-white dark:bg-gray-800/60 px-2.5 py-1.5 shadow-sm`}
-        >
-          <span className="text-xs opacity-50 hidden sm:inline">{icon}</span>
-          <div className="min-w-0">
-            <div className="text-base font-semibold leading-tight text-gray-900 dark:text-gray-100 tabular-nums">
-              {stats[key]}
-            </div>
-            <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 truncate">
-              {label}
-            </div>
-          </div>
+    <div className="flex items-center gap-4 md:gap-6 px-4 md:px-5 py-2 overflow-x-auto scrollbar-hide">
+      {kpis.map(({ key, label, color }) => (
+        <div key={key} className="flex items-baseline gap-1.5 whitespace-nowrap">
+          <span className={`text-lg md:text-xl font-semibold tabular-nums leading-none ${color}`}>
+            {stats[key]}
+          </span>
+          <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
+            {label}
+          </span>
         </div>
       ))}
     </div>

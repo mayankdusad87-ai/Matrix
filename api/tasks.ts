@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors, type TaskLike } from './_shared';
+import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, parseOverrides, setCors, type TaskLike } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -9,11 +9,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await connectDB();
 
     if (req.method === 'GET') {
+      const { medianOverride, urgencyDays } = parseOverrides(req.query as Record<string, string | string[] | undefined>);
       const allTasks = await Task.find().lean() as TaskLike[];
-      const median = calculateMedian(allTasks.map(t => t.importanceScore));
+      const autoMedian = calculateMedian(allTasks.map(t => t.importanceScore));
+      const median = medianOverride !== null ? medianOverride : autoMedian;
       const today = new Date();
-      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
-      let enriched = allTasks.map(t => computeFields(t, median, maxDays));
+      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), urgencyDays);
+      let enriched = allTasks.map(t => ({ ...computeFields(t, median, maxDays, urgencyDays), autoMedian }));
 
       if (req.query.owner) enriched = enriched.filter(t => t.owner === req.query.owner);
       if (req.query.status) enriched = enriched.filter(t => t.status === req.query.status);
@@ -28,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const allTasks = await Task.find().lean() as TaskLike[];
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
-      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
+      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
       return res.status(201).json(computeFields(task.toJSON(), median, maxDays));
     }
 

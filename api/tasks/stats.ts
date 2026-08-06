@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors, type TaskLike } from '../_shared';
+import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, parseOverrides, setCors, type TaskLike } from '../_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -8,11 +8,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
+    const { medianOverride, urgencyDays } = parseOverrides(req.query as Record<string, string | string[] | undefined>);
     const allTasks = await Task.find().lean() as TaskLike[];
-    const median = calculateMedian(allTasks.map(t => t.importanceScore));
+    const autoMedian = calculateMedian(allTasks.map(t => t.importanceScore));
+    const median = medianOverride !== null ? medianOverride : autoMedian;
     const today = new Date();
-    const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
-    const enriched = allTasks.map(t => computeFields(t, median, maxDays));
+    const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), urgencyDays);
+    const enriched = allTasks.map(t => computeFields(t, median, maxDays, urgencyDays));
 
     const now = new Date();
     const startOfWeek = new Date(now);
@@ -31,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return due >= startOfWeek && due <= endOfWeek;
     }).length;
 
-    res.json({ total, completed, inProgress, overdue, dueThisWeek, median });
+    res.json({ total, completed, inProgress, overdue, dueThisWeek, median, autoMedian, urgencyDays });
   } catch (err) {
     console.error('API /tasks/stats error:', err);
     return res.status(500).json({ error: (err as Error).message });

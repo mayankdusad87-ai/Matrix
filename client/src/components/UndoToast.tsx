@@ -31,7 +31,7 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] animate-slide-up">
-      <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3 min-w-[320px] max-w-[90vw]">
+      <div className="bg-[#1a1d26] dark:bg-white text-gray-100 dark:text-gray-900 rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3 min-w-[280px] max-w-[90vw]">
         <span className="text-red-400 dark:text-red-600 text-lg">🗑️</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">

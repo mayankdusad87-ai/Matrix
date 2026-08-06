@@ -19,6 +19,8 @@ export interface Task {
   quadrant: string;
   isOverdue: boolean;
   median: number;
+  autoMedian?: number;
+  urgencyDays?: number;
 }
 
 export interface TaskStats {
@@ -28,6 +30,8 @@ export interface TaskStats {
   overdue: number;
   dueThisWeek: number;
   median: number;
+  autoMedian?: number;
+  urgencyDays?: number;
 }
 
 export interface Filters {
@@ -35,6 +39,11 @@ export interface Filters {
   status: string;
   category: string;
   quadrant: string;
+}
+
+export interface MatrixSettings {
+  medianOverride: number | null; // null = auto-calculated
+  urgencyDays: number;           // default 7
 }
 
 export interface TaskFormData {

@@ -14,50 +14,50 @@ interface Props {
 
 const QUADRANT_STYLES = {
   'Do Now': {
-    bg: 'bg-white dark:bg-gray-800',
-    border: 'border-red-300 dark:border-red-600/60',
+    bg: 'bg-white dark:bg-[#1a1d26]',
+    border: 'border-red-300/70 dark:border-red-500/30',
     text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-red-500',
     badgeText: 'text-white',
-    ring: 'ring-red-200/40 dark:ring-red-800/30',
+    ring: 'ring-red-100/50 dark:ring-red-900/20',
     icon: '🔥',
   },
   'Schedule': {
-    bg: 'bg-white dark:bg-gray-800',
-    border: 'border-blue-300 dark:border-blue-600/60',
+    bg: 'bg-white dark:bg-[#1a1d26]',
+    border: 'border-blue-300/70 dark:border-blue-500/30',
     text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-blue-500',
     badgeText: 'text-white',
-    ring: 'ring-blue-200/40 dark:ring-blue-800/30',
+    ring: 'ring-blue-100/50 dark:ring-blue-900/20',
     icon: '📅',
   },
   'Delegate': {
-    bg: 'bg-white dark:bg-gray-800',
-    border: 'border-amber-300 dark:border-amber-600/60',
+    bg: 'bg-white dark:bg-[#1a1d26]',
+    border: 'border-amber-300/70 dark:border-amber-500/30',
     text: 'text-gray-800 dark:text-gray-100',
     badge: 'bg-amber-500',
     badgeText: 'text-white',
-    ring: 'ring-amber-200/40 dark:ring-amber-800/30',
+    ring: 'ring-amber-100/50 dark:ring-amber-900/20',
     icon: '👋',
   },
   'Deprioritize': {
-    bg: 'bg-white dark:bg-gray-800',
-    border: 'border-gray-300 dark:border-gray-600/60',
-    text: 'text-gray-700 dark:text-gray-300',
-    badge: 'bg-gray-400 dark:bg-gray-500',
+    bg: 'bg-white dark:bg-[#1a1d26]',
+    border: 'border-gray-200 dark:border-white/[0.06]',
+    text: 'text-gray-600 dark:text-gray-400',
+    badge: 'bg-gray-400 dark:bg-gray-600',
     badgeText: 'text-white',
-    ring: 'ring-gray-200/40 dark:ring-gray-700/30',
+    ring: 'ring-gray-100/50 dark:ring-white/[0.03]',
     icon: '📋',
   },
 } as const;
 
 const OVERDUE_STYLE = {
-  bg: 'bg-red-50 dark:bg-red-950/40',
-  border: 'border-red-400 dark:border-red-500/70',
+  bg: 'bg-red-50 dark:bg-red-950/30',
+  border: 'border-red-400/70 dark:border-red-500/40',
   text: 'text-red-800 dark:text-red-200',
   badge: 'bg-red-600',
   badgeText: 'text-white',
-  ring: 'ring-red-300/40 dark:ring-red-800/40',
+  ring: 'ring-red-200/40 dark:ring-red-900/30',
   icon: '⚠️',
 };
 
@@ -193,12 +193,12 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                 zIndex: 9999,
               }}
             >
-              <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl shadow-2xl px-3 py-2.5 text-left"
+              <div className="bg-[#1a1d26] dark:bg-white text-gray-100 dark:text-gray-900 rounded-xl shadow-2xl px-3 py-2.5 text-left"
                 style={{ width: TOOLTIP_W }}
               >
                 {/* Arrow */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-gray-900 dark:bg-gray-100 rotate-45"
+                  className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1a1d26] dark:bg-white rotate-45"
                   style={tooltipPos.above
                     ? { bottom: -5 }
                     : { top: -5 }

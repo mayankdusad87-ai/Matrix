@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, URGENCY_THRESHOLD, setCors, type TaskLike } from '../_shared';
+import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, setCors, type TaskLike } from '../_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const allTasks = await Task.find().lean() as TaskLike[];
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
-      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
+      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
       return res.json(computeFields(task, median, maxDays));
     }
 
@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const allTasks = await Task.find().lean() as TaskLike[];
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
-      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), URGENCY_THRESHOLD);
+      const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
       return res.json(computeFields(task.toJSON(), median, maxDays));
     }
 

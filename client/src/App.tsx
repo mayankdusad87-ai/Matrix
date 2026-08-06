@@ -15,9 +15,10 @@ export default function App() {
     search, setSearch,
     createTask, updateTask, deleteTask,
     deletedTask, undoDelete, dismissUndo,
+    matrixSettings, setMatrixSettings,
   } = useTasks();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [activeTab, setActiveTab] = useState<'input' | 'matrix' | 'analytics'>('input');
+  const [activeTab, setActiveTab] = useState<'input' | 'matrix' | 'analytics'>('matrix');
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -36,59 +37,65 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="text-lg text-gray-500 dark:text-gray-400 animate-pulse">Loading tasks...</div>
+      <div className="h-screen flex items-center justify-center bg-[#fafbfc] dark:bg-[#0a0b0f]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-medium text-gray-400 dark:text-gray-500">Loading tasks…</span>
+        </div>
       </div>
     );
   }
 
+  const tabs = [
+    { key: 'matrix' as const, label: 'Matrix', icon: '◆' },
+    { key: 'input' as const, label: 'Tasks', icon: '☰' },
+    { key: 'analytics' as const, label: 'Analytics', icon: '◎' },
+  ];
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <h1 className="text-lg md:text-xl font-bold tracking-tight">
-          <span className="text-indigo-600 dark:text-indigo-400">Priority</span> Matrix
+    <div className="h-screen flex flex-col bg-[#fafbfc] dark:bg-[#0a0b0f] text-gray-900 dark:text-gray-100 transition-colors">
+      {/* ── Top bar ── */}
+      <header className="flex items-center justify-between px-4 md:px-5 h-12 border-b border-gray-200/80 dark:border-white/[0.06] bg-white dark:bg-[#111318] shrink-0">
+        <h1 className="text-[15px] font-semibold tracking-[-0.01em]">
+          <span className="text-indigo-600 dark:text-indigo-400">Priority</span>
+          <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">Matrix</span>
         </h1>
 
-        <div className="flex items-center gap-1">
-          {/* Tab buttons */}
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 mr-2 md:mr-3">
-            {([
-              { key: 'input', label: 'Input Sheet', shortLabel: 'Input' },
-              { key: 'matrix', label: 'Matrix View', shortLabel: 'Matrix' },
-              { key: 'analytics', label: 'Analytics', shortLabel: '📊' },
-            ] as const).map(tab => (
+        <div className="flex items-center gap-0.5">
+          {/* Tab pills */}
+          <nav className="flex bg-gray-100/80 dark:bg-white/[0.04] rounded-lg p-[3px] mr-2">
+            {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-2 md:px-4 py-1.5 text-xs md:text-sm font-medium rounded-md transition-colors ${
+                className={`px-2.5 md:px-3.5 py-[5px] text-[11px] md:text-[12px] font-medium rounded-md transition-all ${
                   activeTab === tab.key
-                    ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
+                <span className="md:hidden">{tab.icon}</span>
                 <span className="hidden md:inline">{tab.label}</span>
-                <span className="md:hidden">{tab.shortLabel}</span>
               </button>
             ))}
-          </div>
+          </nav>
 
           <button
             onClick={() => setDark(!dark)}
-            className="rounded-lg p-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
             title="Toggle theme"
           >
-            {dark ? '☀️' : '🌙'}
+            <span className="text-sm">{dark ? '☀️' : '🌙'}</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Dashboard KPIs */}
+      {/* ── KPIs ── */}
       <div className="max-w-6xl w-full mx-auto">
         <Dashboard stats={stats} />
       </div>
 
-      {/* Tab content */}
+      {/* ── Tab content ── */}
       {activeTab === 'input' ? (
         <InputSheet
           tasks={tasks}
@@ -106,7 +113,13 @@ export default function App() {
           <div className="max-w-6xl w-full mx-auto">
             <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setActiveTab('input')} />
           </div>
-          <Matrix tasks={tasks} onTaskClick={(t) => setSelectedTask(t)} onImportanceChange={handleImportanceChange} />
+          <Matrix
+            tasks={tasks}
+            onTaskClick={(t) => setSelectedTask(t)}
+            onImportanceChange={handleImportanceChange}
+            matrixSettings={matrixSettings}
+            onSettingsChange={setMatrixSettings}
+          />
         </>
       )}
 
@@ -126,7 +139,6 @@ export default function App() {
         />
       )}
 
-      {/* Undo toast */}
       {deletedTask && (
         <UndoToast
           key={deletedTask.id}
