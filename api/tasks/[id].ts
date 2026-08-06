@@ -26,7 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
       const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
-      return res.json(computeFields(task.toJSON(), median, maxDays));
+      const plain = task.toObject() as unknown as TaskLike;
+      return res.json(computeFields(plain, median, maxDays));
     }
 
     if (req.method === 'DELETE') {

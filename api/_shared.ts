@@ -72,9 +72,14 @@ function determineQuadrant(importanceScore: number, daysRemaining: number, media
 }
 
 export interface TaskLike {
+  title: string;
+  description: string;
   dueDate: string;
   importanceScore: number;
   startDate?: string;
+  status?: string;
+  owner?: string;
+  category?: string;
   _id?: unknown;
   id?: unknown;
   [key: string]: unknown;
