@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 type Mode = 'login' | 'signup' | 'forgot' | 'reset';
@@ -17,8 +17,134 @@ function passwordStrength(pw: string): { score: number; label: string; color: st
   if (passed <= 1) return { score: passed, label: 'Weak', color: '#ef4444' };
   if (passed <= 2) return { score: passed, label: 'Fair', color: '#f59e0b' };
   if (passed <= 3) return { score: passed, label: 'Good', color: '#3b82f6' };
-  if (passed <= 4) return { score: passed, label: 'Strong', color: '#10b981' };
-  return { score: passed, label: 'Very Strong', color: '#059669' };
+  if (passed <= 4) return { score: passed, label: 'Strong', color: '#22c55e' };
+  return { score: passed, label: 'Very Strong', color: '#a3e635' };
+}
+
+/* ── Animated globe drawn on Canvas ── */
+function GlobeCanvas({ size = 120 }: { size?: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.scale(dpr, dpr);
+
+    let rotation = 0;
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = size / 2 - 4;
+
+    function draw() {
+      ctx.clearRect(0, 0, size, size);
+
+      // Glow
+      const glow = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 1.4);
+      glow.addColorStop(0, 'rgba(163, 230, 53, 0.15)');
+      glow.addColorStop(0.5, 'rgba(163, 230, 53, 0.05)');
+      glow.addColorStop(1, 'rgba(163, 230, 53, 0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, size, size);
+
+      // Globe body
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+      grad.addColorStop(0, '#2a3a1a');
+      grad.addColorStop(0.5, '#1a2a10');
+      grad.addColorStop(1, '#0a1408');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.clip();
+
+      // Grid lines (longitude)
+      ctx.strokeStyle = 'rgba(163, 230, 53, 0.2)';
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI + rotation;
+        const xOff = Math.cos(angle) * r;
+        ctx.beginPath();
+        ctx.ellipse(cx + xOff * 0.1, cy, Math.abs(xOff) * 0.5 + 2, r, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Grid lines (latitude)
+      for (let i = 1; i < 6; i++) {
+        const yPos = cy - r + (2 * r * i) / 6;
+        const latR = Math.sqrt(r * r - (yPos - cy) * (yPos - cy));
+        ctx.beginPath();
+        ctx.ellipse(cx, yPos, latR, latR * 0.15, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Continent-like patches (abstract)
+      ctx.fillStyle = 'rgba(163, 230, 53, 0.12)';
+      const patches = [
+        { x: 0.3, y: 0.35, w: 0.25, h: 0.2 },
+        { x: 0.55, y: 0.4, w: 0.2, h: 0.25 },
+        { x: 0.2, y: 0.6, w: 0.15, h: 0.15 },
+        { x: 0.6, y: 0.65, w: 0.18, h: 0.12 },
+      ];
+      patches.forEach(p => {
+        const px = cx - r + (p.x + Math.sin(rotation) * 0.05) * 2 * r;
+        const py = cy - r + p.y * 2 * r;
+        ctx.beginPath();
+        ctx.ellipse(px, py, p.w * r, p.h * r, rotation * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Bright dots (cities / nodes)
+      ctx.fillStyle = '#a3e635';
+      ctx.shadowColor = '#a3e635';
+      ctx.shadowBlur = 4;
+      const dots = [
+        { a: rotation, lat: 0.3 },
+        { a: rotation + 1.2, lat: -0.2 },
+        { a: rotation + 2.5, lat: 0.1 },
+        { a: rotation + 3.8, lat: -0.35 },
+        { a: rotation + 5.0, lat: 0.25 },
+      ];
+      dots.forEach(d => {
+        const cosA = Math.cos(d.a);
+        if (cosA < 0) return; // behind globe
+        const x = cx + Math.sin(d.a) * r * 0.8 * Math.cos(d.lat);
+        const y = cy + d.lat * r * 1.5;
+        if (x < cx - r || x > cx + r || y < cy - r || y > cy + r) return;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+
+      ctx.restore();
+
+      // Edge ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(163, 230, 53, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      rotation += 0.003;
+      frameRef.current = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [size]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: size, height: size }}
+    />
+  );
 }
 
 export default function AuthPage() {
@@ -27,6 +153,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,10 +193,8 @@ export default function AuthPage() {
     clearMessages();
     if (!email.trim() || !password || !confirmPassword) { setError('Please fill in all fields.'); return; }
 
-    // Validate email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Please enter a valid email address.'); return; }
 
-    // Validate password strength
     const failedRules = PW_RULES.filter(r => !r.test(password));
     if (failedRules.length > 0) {
       setError(`Password needs: ${failedRules.map(r => r.label.toLowerCase()).join(', ')}`);
@@ -159,270 +284,450 @@ export default function AuthPage() {
   const strength = passwordStrength(password);
   const showStrength = (mode === 'signup' || mode === 'reset') && password.length > 0;
 
+  const headings: Record<Mode, { title: string; subtitle: string }> = {
+    login: { title: 'Welcome Back!', subtitle: 'Sign in to manage your priorities with clarity.' },
+    signup: { title: 'Get Started', subtitle: 'Create your account and take control of your tasks.' },
+    forgot: { title: 'Forgot Password?', subtitle: 'Enter your email and we\'ll send a reset link.' },
+    reset: { title: 'New Password', subtitle: 'Choose a strong password for your account.' },
+  };
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--bg-page)' }}
+      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: '#0a0a0a' }}
     >
-      <div className="w-full max-w-[400px]">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: 'var(--accent)', boxShadow: '0 4px 24px rgba(99,102,241,0.25)' }}
+      {/* Subtle radial glow behind globe */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: '10%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(163,230,53,0.06) 0%, transparent 70%)',
+        }}
+      />
+
+      {/* Top-right decorative dots */}
+      <div className="absolute top-6 right-6 flex items-center gap-2 opacity-40">
+        <div className="w-2 h-2 rounded-full" style={{ background: '#a3e635' }} />
+        <div className="w-2 h-2 rounded-full" style={{ background: '#a3e635', opacity: 0.5 }} />
+      </div>
+
+      <div className="w-full max-w-[380px] relative z-10">
+        {/* Globe */}
+        <div className="flex justify-center mb-6">
+          <GlobeCanvas size={110} />
+        </div>
+
+        {/* Heading */}
+        <div className="text-center mb-8">
+          <h1
+            className="text-[28px] font-bold tracking-[-0.03em] mb-2"
+            style={{ color: '#ffffff' }}
           >
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
-              <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
-            </svg>
-          </div>
-          <h1 className="text-xl font-bold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
-            Priority Matrix
+            {headings[mode].title}
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-tertiary)' }}>
-            {mode === 'login' && 'Sign in to your workspace'}
-            {mode === 'signup' && 'Create your account'}
-            {mode === 'forgot' && 'Reset your password'}
-            {mode === 'reset' && 'Set a new password'}
+          <p
+            className="text-[14px] leading-relaxed"
+            style={{ color: 'rgba(255,255,255,0.45)' }}
+          >
+            {headings[mode].subtitle}
           </p>
         </div>
 
-        {/* Card */}
-        <div
-          className="rounded-2xl p-6"
-          style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-lg)',
-          }}
-        >
-          {/* Error / Success */}
-          {error && (
-            <div
-              className="mb-4 p-3 rounded-xl text-sm flex items-start gap-2.5"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#ef4444' }}
-            >
-              <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          )}
-          {success && (
-            <div
-              className="mb-4 p-3 rounded-xl text-sm flex items-start gap-2.5"
-              style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', color: '#10b981' }}
-            >
-              <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{success}</span>
+        {/* Error / Success */}
+        {error && (
+          <div
+            className="mb-5 p-3.5 rounded-xl text-[13px] flex items-start gap-2.5"
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              color: '#f87171',
+            }}
+          >
+            <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
+        {success && (
+          <div
+            className="mb-5 p-3.5 rounded-xl text-[13px] flex items-start gap-2.5"
+            style={{
+              background: 'rgba(163,230,53,0.08)',
+              border: '1px solid rgba(163,230,53,0.2)',
+              color: '#a3e635',
+            }}
+          >
+            <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{success}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={
+          mode === 'login' ? handleLogin :
+          mode === 'signup' ? handleSignup :
+          mode === 'forgot' ? handleForgotPassword :
+          handleResetPassword
+        }>
+          {/* Email (not for reset) */}
+          {mode !== 'reset' && (
+            <div className="mb-5">
+              <label
+                className="block text-[13px] font-medium mb-2"
+                style={{ color: 'rgba(255,255,255,0.7)' }}
+              >
+                Email address<span style={{ color: '#a3e635' }}>*</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="example@gmail.com"
+                autoComplete="email"
+                className="w-full h-[48px] px-4 rounded-xl text-[14px] outline-none transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#ffffff',
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = 'rgba(163,230,53,0.5)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(163,230,53,0.08)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
             </div>
           )}
 
-          <form onSubmit={
-            mode === 'login' ? handleLogin :
-            mode === 'signup' ? handleSignup :
-            mode === 'forgot' ? handleForgotPassword :
-            handleResetPassword
-          }>
-            {/* Email (not for reset) */}
-            {mode !== 'reset' && (
-              <div className="mb-4">
-                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-tertiary)' }}>
-                  Email
-                </label>
+          {/* Password (not for forgot) */}
+          {mode !== 'forgot' && (
+            <div className="mb-4">
+              <label
+                className="block text-[13px] font-medium mb-2"
+                style={{ color: 'rgba(255,255,255,0.7)' }}
+              >
+                {mode === 'reset' ? 'New Password' : 'Password'}<span style={{ color: '#a3e635' }}>*</span>
+              </label>
+              <div className="relative">
                 <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  className="w-full h-10 px-3 rounded-lg text-sm outline-none transition-all duration-200"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="@Sn123hsn#"
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  className="w-full h-[48px] px-4 pr-11 rounded-xl text-[14px] outline-none transition-all duration-200"
                   style={{
-                    background: 'var(--bg-inset)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-primary)',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#ffffff',
                   }}
-                  onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                  onFocus={e => {
+                    e.currentTarget.style.borderColor = 'rgba(163,230,53,0.5)';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(163,230,53,0.08)';
+                  }}
+                  onBlur={e => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors"
+                  style={{ color: 'rgba(255,255,255,0.35)' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  ) : (
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
               </div>
-            )}
 
-            {/* Password (not for forgot) */}
-            {mode !== 'forgot' && (
-              <div className="mb-4">
-                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-tertiary)' }}>
-                  {mode === 'reset' ? 'New Password' : 'Password'}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                    className="w-full h-10 px-3 pr-10 rounded-lg text-sm outline-none transition-all duration-200"
-                    style={{
-                      background: 'var(--bg-inset)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-primary)',
-                    }}
-                    onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors"
-                    style={{ color: 'var(--text-quaternary)' }}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                        <path strokeLinecap="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                        <path strokeLinecap="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-
-                {/* Password strength meter */}
-                {showStrength && (
-                  <div className="mt-2">
-                    <div className="flex gap-1 mb-1">
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <div
-                          key={i}
-                          className="h-1 flex-1 rounded-full transition-all duration-300"
-                          style={{
-                            background: i <= strength.score ? strength.color : 'var(--bg-inset)',
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-[10px] font-medium" style={{ color: strength.color }}>
-                      {strength.label}
-                    </p>
+              {/* Password strength meter */}
+              {showStrength && (
+                <div className="mt-2.5">
+                  <div className="flex gap-1 mb-1.5">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div
+                        key={i}
+                        className="h-[3px] flex-1 rounded-full transition-all duration-300"
+                        style={{
+                          background: i <= strength.score ? strength.color : 'rgba(255,255,255,0.08)',
+                        }}
+                      />
+                    ))}
                   </div>
-                )}
+                  <p className="text-[11px] font-medium" style={{ color: strength.color }}>
+                    {strength.label}
+                  </p>
+                </div>
+              )}
 
-                {/* Forgot password link (login only) */}
-                {mode === 'login' && (
+              {/* Remember me + Forgot password (login only) */}
+              {mode === 'login' && (
+                <div className="flex items-center justify-between mt-3">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <div
+                      className="w-[18px] h-[18px] rounded flex items-center justify-center transition-all duration-200"
+                      style={{
+                        background: rememberMe ? '#a3e635' : 'transparent',
+                        border: rememberMe ? '1px solid #a3e635' : '1px solid rgba(255,255,255,0.2)',
+                      }}
+                      onClick={() => setRememberMe(!rememberMe)}
+                    >
+                      {rememberMe && (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="#0a0a0a" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <span
+                      className="text-[13px]"
+                      style={{ color: 'rgba(255,255,255,0.5)' }}
+                      onClick={() => setRememberMe(!rememberMe)}
+                    >
+                      Remember me
+                    </span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => switchMode('forgot')}
-                    className="block text-[12px] font-medium mt-2 transition-colors"
-                    style={{ color: 'var(--accent)' }}
-                    onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                    className="text-[13px] font-medium transition-colors"
+                    style={{ color: '#a3e635' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                   >
-                    Forgot password?
+                    Forgot Password?
                   </button>
-                )}
-              </div>
-            )}
-
-            {/* Confirm password (signup & reset only) */}
-            {(mode === 'signup' || mode === 'reset') && (
-              <div className="mb-5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-tertiary)' }}>
-                  Confirm Password
-                </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  className="w-full h-10 px-3 rounded-lg text-sm outline-none transition-all duration-200"
-                  style={{
-                    background: 'var(--bg-inset)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-primary)',
-                  }}
-                  onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                />
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-[10px] mt-1 font-medium" style={{ color: '#ef4444' }}>
-                    Passwords don't match
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-10 rounded-lg text-sm font-semibold text-white transition-all duration-200 flex items-center justify-center gap-2"
-              style={{
-                background: loading ? 'var(--accent-hover)' : 'var(--accent)',
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = 'var(--accent-hover)'; }}
-              onMouseLeave={e => { if (!loading) e.currentTarget.style.background = 'var(--accent)'; }}
-            >
-              {loading && (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
+                </div>
               )}
-              {mode === 'login' && 'Sign In'}
-              {mode === 'signup' && 'Create Account'}
-              {mode === 'forgot' && 'Send Reset Link'}
-              {mode === 'reset' && 'Update Password'}
-            </button>
-          </form>
+            </div>
+          )}
 
-          {/* Mode switch */}
-          <div className="mt-5 pt-4 text-center text-sm" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-tertiary)' }}>
-            {mode === 'login' && (
+          {/* Confirm password (signup & reset only) */}
+          {(mode === 'signup' || mode === 'reset') && (
+            <div className="mb-5">
+              <label
+                className="block text-[13px] font-medium mb-2"
+                style={{ color: 'rgba(255,255,255,0.7)' }}
+              >
+                Confirm Password<span style={{ color: '#a3e635' }}>*</span>
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                className="w-full h-[48px] px-4 rounded-xl text-[14px] outline-none transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#ffffff',
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = 'rgba(163,230,53,0.5)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(163,230,53,0.08)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-[11px] mt-1.5 font-medium" style={{ color: '#f87171' }}>
+                  Passwords don't match
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-[50px] rounded-xl text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-2.5 mt-6"
+            style={{
+              background: loading ? 'rgba(163,230,53,0.7)' : '#a3e635',
+              color: '#0a0a0a',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: loading ? 'none' : '0 0 20px rgba(163,230,53,0.2)',
+            }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = '#bef264'; e.currentTarget.style.boxShadow = '0 0 30px rgba(163,230,53,0.3)'; } }}
+            onMouseLeave={e => { if (!loading) { e.currentTarget.style.background = '#a3e635'; e.currentTarget.style.boxShadow = '0 0 20px rgba(163,230,53,0.2)'; } }}
+          >
+            {loading ? (
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
               <>
-                Don't have an account?{' '}
-                <button onClick={() => switchMode('signup')} className="font-semibold" style={{ color: 'var(--accent)' }}>
-                  Sign Up
-                </button>
+                {/* Sparkle icon */}
+                <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+                </svg>
+                {mode === 'login' && 'Sign in'}
+                {mode === 'signup' && 'Create Account'}
+                {mode === 'forgot' && 'Send Reset Link'}
+                {mode === 'reset' && 'Update Password'}
               </>
             )}
-            {mode === 'signup' && (
-              <>
-                Already have an account?{' '}
-                <button onClick={() => switchMode('login')} className="font-semibold" style={{ color: 'var(--accent)' }}>
-                  Sign In
-                </button>
-              </>
-            )}
-            {mode === 'forgot' && (
-              <>
-                Remember your password?{' '}
-                <button onClick={() => switchMode('login')} className="font-semibold" style={{ color: 'var(--accent)' }}>
-                  Back to Sign In
-                </button>
-              </>
-            )}
-            {mode === 'reset' && (
-              <>
-                <button onClick={() => switchMode('login')} className="font-semibold" style={{ color: 'var(--accent)' }}>
-                  Back to Sign In
-                </button>
-              </>
-            )}
-          </div>
+          </button>
+        </form>
+
+        {/* Divider + Social (login only) */}
+        {mode === 'login' && (
+          <>
+            <div className="flex items-center gap-3 my-7">
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                Or continue with
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="flex-1 h-[46px] rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                onClick={() => setError('Social login coming soon!')}
+              >
+                {/* Google icon */}
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Google
+              </button>
+              <button
+                type="button"
+                className="flex-1 h-[46px] rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                onClick={() => setError('Social login coming soon!')}
+              >
+                {/* Apple icon */}
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.55 4.41-3.74 4.25z"/>
+                </svg>
+                Apple
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Mode switch */}
+        <div className="mt-8 text-center text-[14px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          {mode === 'login' && (
+            <>
+              Don't have an account?{' '}
+              <button
+                onClick={() => switchMode('signup')}
+                className="font-semibold transition-colors"
+                style={{ color: '#a3e635' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Sign up
+              </button>
+            </>
+          )}
+          {mode === 'signup' && (
+            <>
+              Already have an account?{' '}
+              <button
+                onClick={() => switchMode('login')}
+                className="font-semibold transition-colors"
+                style={{ color: '#a3e635' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Sign in
+              </button>
+            </>
+          )}
+          {mode === 'forgot' && (
+            <>
+              Remember your password?{' '}
+              <button
+                onClick={() => switchMode('login')}
+                className="font-semibold transition-colors"
+                style={{ color: '#a3e635' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Back to Sign in
+              </button>
+            </>
+          )}
+          {mode === 'reset' && (
+            <button
+              onClick={() => switchMode('login')}
+              className="font-semibold transition-colors"
+              style={{ color: '#a3e635' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              Back to Sign in
+            </button>
+          )}
         </div>
 
-        {/* Security note */}
-        <p className="text-center text-[10px] mt-6" style={{ color: 'var(--text-quaternary)' }}>
-          Secured with Supabase Auth · End-to-end encrypted · Row-level security
-        </p>
+        {/* Branding */}
+        <div className="mt-6 flex flex-col items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-5 h-5 rounded flex items-center justify-center"
+              style={{ background: 'rgba(163,230,53,0.15)' }}
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="#a3e635" strokeWidth={2.5}>
+                <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+                <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+              </svg>
+            </div>
+            <span className="text-[13px] font-semibold tracking-[-0.02em]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Priorix
+            </span>
+          </div>
+          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Secured with Supabase Auth · End-to-end encrypted
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -98,7 +98,7 @@ function AppContent() {
             </svg>
           </div>
           <span className="text-[15px] font-semibold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
-            Priority Matrix
+            Priorix
           </span>
         </div>
 
