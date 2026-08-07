@@ -44,14 +44,15 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'input' | 'matrix' | 'analytics'>('matrix');
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      return localStorage.getItem('theme') !== 'light';
     }
-    return false;
+    return true;
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.classList.toggle('light', !dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
 
@@ -86,8 +87,8 @@ function AppContent() {
     <div className="h-screen flex flex-col" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       {/* ── Header ── */}
       <header
-        className="flex items-center justify-between px-4 md:px-5 h-[52px] shrink-0 z-20"
-        style={{ background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}
+        className="flex items-center justify-between px-4 md:px-5 h-[56px] shrink-0 z-20"
+        style={{ background: 'rgba(17,17,17,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5">
@@ -168,7 +169,8 @@ function AppContent() {
               <div
                 className="absolute right-0 top-full mt-1 w-56 rounded-xl py-1.5 z-50"
                 style={{
-                  background: 'var(--bg-surface-elevated)',
+                  background: 'rgba(24,24,24,0.95)',
+                  backdropFilter: 'blur(12px)',
                   border: '1px solid var(--border)',
                   boxShadow: 'var(--shadow-xl)',
                 }}
@@ -208,32 +210,34 @@ function AppContent() {
       )}
 
       {/* ── Tab content ── */}
-      {activeTab === 'input' ? (
-        <InputSheet
-          tasks={tasks}
-          allTasks={allTasks}
-          search={search}
-          onSearchChange={setSearch}
-          onUpdate={updateTask}
-          onDelete={deleteTask}
-          onCreate={createTask}
-        />
-      ) : activeTab === 'analytics' ? (
-        <Analytics tasks={allTasks} />
-      ) : (
-        <>
-          <div className="max-w-7xl w-full mx-auto" style={{ borderBottom: '1px solid var(--border)' }}>
-            <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setActiveTab('input')} />
-          </div>
-          <Matrix
+      <div key={activeTab} className="flex-1 flex flex-col min-h-0 animate-fade-slide">
+        {activeTab === 'input' ? (
+          <InputSheet
             tasks={tasks}
-            onTaskClick={(t) => setSelectedTask(t)}
-            onImportanceChange={handleImportanceChange}
-            matrixSettings={matrixSettings}
-            onSettingsChange={setMatrixSettings}
+            allTasks={allTasks}
+            search={search}
+            onSearchChange={setSearch}
+            onUpdate={updateTask}
+            onDelete={deleteTask}
+            onCreate={createTask}
           />
-        </>
-      )}
+        ) : activeTab === 'analytics' ? (
+          <Analytics tasks={allTasks} />
+        ) : (
+          <>
+            <div className="max-w-7xl w-full mx-auto" style={{ borderBottom: '1px solid var(--border)' }}>
+              <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setActiveTab('input')} />
+            </div>
+            <Matrix
+              tasks={tasks}
+              onTaskClick={(t) => setSelectedTask(t)}
+              onImportanceChange={handleImportanceChange}
+              matrixSettings={matrixSettings}
+              onSettingsChange={setMatrixSettings}
+            />
+          </>
+        )}
+      </div>
 
       {/* ── Side panel ── */}
       {selectedTask && (
@@ -268,9 +272,9 @@ export default function App() {
   const { user, loading } = useAuth();
   // Apply persisted theme even on auth page
   useEffect(() => {
-    const isDark = localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = localStorage.getItem('theme') !== 'light';
     document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('light', !isDark);
   }, []);
 
   // Auth loading spinner

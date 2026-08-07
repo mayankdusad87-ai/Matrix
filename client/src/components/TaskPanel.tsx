@@ -37,17 +37,17 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 animate-fade-in"
-        style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
+        style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
         onClick={onClose}
       />
 
       {/* Panel */}
       <div
-        className="fixed inset-y-0 right-0 w-[420px] max-w-full z-50 flex flex-col animate-slide-in-right"
+        className="fixed inset-y-0 right-0 w-[440px] max-w-full z-50 flex flex-col animate-slide-in-right"
         style={{ background: 'var(--bg-surface)', borderLeft: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 h-[52px] shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between px-6 h-[56px] shrink-0" style={{ borderBottom: '1px solid var(--border)', backdropFilter: 'blur(12px)' }}>
           <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Task Details</h2>
           <button
             onClick={onClose}
@@ -63,7 +63,7 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin">
           {/* Title */}
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Title</label>
@@ -93,7 +93,7 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
           </div>
 
           {/* Info grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <InfoItem label="Owner" value={task.owner} />
             <InfoItem label="Category" value={task.category} />
             <InfoItem label="Start Date" value={new Date(task.startDate).toLocaleDateString()} />
@@ -198,25 +198,25 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3.5 flex gap-2 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="px-6 py-4 flex gap-2 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
           {!editing ? (
             <>
               <button onClick={() => setEditing(true)}
-                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                 Edit
               </button>
               <button onClick={handleSave}
-                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150"
+                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
                 style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(163,230,53,0.15)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
                 Save Changes
               </button>
               <button onClick={() => onDelete(task.id)}
-                className="rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                className="rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
                 style={{ border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -226,14 +226,14 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
           ) : (
             <>
               <button onClick={() => setEditing(false)}
-                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                 Cancel
               </button>
               <button onClick={handleSave}
-                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150"
+                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
                 style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(163,230,53,0.15)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
@@ -249,7 +249,7 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
 
 function InfoItem({ label, value, highlight }: { label: string; value: string; highlight?: string }) {
   return (
-    <div className="rounded-lg px-3 py-2.5" style={{ background: 'var(--bg-inset)' }}>
+    <div className="rounded-lg px-4 py-3" style={{ background: 'var(--bg-inset)' }}>
       <span className="text-[10px] font-semibold uppercase tracking-wider block mb-0.5" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
       <p className="text-sm font-medium" style={{ color: highlight || 'var(--text-primary)' }}>{value}</p>
     </div>

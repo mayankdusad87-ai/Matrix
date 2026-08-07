@@ -321,10 +321,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
   const urgencyActive = draggingUrgency || hoveringUrgency;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 px-2 md:px-4 pb-2 md:pb-4 gap-1.5 md:gap-2.5">
+    <div className="flex-1 flex flex-col min-h-0 px-3 md:px-5 pb-3 md:pb-5 gap-2 md:gap-3">
       {/* ── Legend + settings ── */}
-      <div className="flex items-center justify-between gap-2 pt-2">
-        <div className="flex items-center gap-2.5 md:gap-4 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-2 pt-3">
+        <div className="flex items-center gap-3 md:gap-5 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
           {Q.map(q => (
             <span key={q.key} className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0" style={{ background: isDark ? q.darkColor : q.color }} />
@@ -357,7 +357,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               </span>
             </div>
             {/* Tick marks */}
-            <div className="flex-1 flex flex-col justify-between py-1 text-[9px] md:text-[11px] font-medium w-6 md:w-9 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
+            <div className="flex-1 flex flex-col justify-between py-1 text-[9px] md:text-[11px] font-medium w-7 md:w-10 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
               {[...yLabels].reverse().map(v => (
                 <span key={v} className={`text-right leading-none ${v === median ? 'font-bold' : ''}`} style={v === median ? { color: 'var(--accent)' } : undefined}>{v}</span>
               ))}
@@ -368,7 +368,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
             <div
               ref={containerRef}
               className="relative flex-1 rounded-xl md:rounded-2xl overflow-hidden"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03), var(--shadow-sm)' }}
             >
               {/* Quadrant fills */}
               <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: 'linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.07) 100%)' }} />
@@ -500,7 +500,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
             </div>
 
             {/* X-axis: tick marks + prominent title */}
-            <div className="flex justify-between pt-1.5 md:pt-2 text-[9px] md:text-[11px] font-medium px-0.5 md:px-1 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
+            <div className="flex justify-between pt-2 md:pt-3 text-[9px] md:text-[11px] font-medium px-0.5 md:px-1 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
               {xLabels.map(({ pct, label }) => (
                 <span key={pct} style={pct === URGENCY_DIVIDER ? { color: 'var(--accent)', fontWeight: 700 } : undefined}>{label}</span>
               ))}

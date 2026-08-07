@@ -22,11 +22,11 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
   const activeCount = [filters.owner, filters.status, filters.category, filters.quadrant].filter(Boolean).length;
 
   const selectClass =
-    'w-full rounded-lg text-[13px] px-2.5 py-[7px] font-medium focus:outline-none focus:ring-2 transition-colors duration-150';
+    'w-full rounded-lg text-[13px] px-2.5 py-[9px] font-medium focus:outline-none focus:ring-2 transition-colors duration-150';
 
   return (
     <div>
-      <div className="flex items-center gap-2 px-4 md:px-5 py-2">
+      <div className="flex items-center gap-2 px-5 md:px-6 py-3">
         {/* Mobile: filter toggle */}
         <button
           onClick={() => setOpen(!open)}
@@ -88,8 +88,8 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
 
         <button
           onClick={onCreateClick}
-          className="rounded-lg text-[13px] font-semibold px-3.5 py-[6px] transition-all duration-150 hover:shadow-md active:scale-[0.97]"
-          style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(163,230,53,0.15)' }}
+          className="rounded-lg text-[13px] font-semibold px-4 py-[9px] transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+          style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 16px rgba(163,230,53,0.2)' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >
@@ -104,7 +104,7 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
 
       {/* Mobile expanded filters */}
       {open && (
-        <div className="md:hidden grid grid-cols-2 gap-2 px-4 pb-3 animate-fade-in">
+        <div className="md:hidden grid grid-cols-2 gap-3 px-5 pb-4 animate-fade-in">
           {[
             { key: 'owner' as const, placeholder: 'All Owners', options: owners },
             { key: 'status' as const, placeholder: 'All Statuses', options: statuses },

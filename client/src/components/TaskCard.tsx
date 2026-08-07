@@ -21,7 +21,7 @@ const QUADRANT_COLORS = {
 
 const OVERDUE_COLORS = { accent: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.30)', darkBg: 'rgba(239,68,68,0.15)', darkBorder: 'rgba(239,68,68,0.35)' };
 
-const TOOLTIP_W = 220;
+const TOOLTIP_W = 240;
 const TOOLTIP_H = 180;
 const TOOLTIP_GAP = 8;
 
@@ -84,15 +84,15 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="absolute -translate-x-1/2 translate-y-1/2 w-[64px] md:w-[88px] rounded-md md:rounded-lg
-          px-1 md:px-1.5 py-0.5 md:py-1 cursor-pointer select-none z-10"
+        className="absolute -translate-x-1/2 translate-y-1/2 w-[68px] md:w-[96px] rounded-lg md:rounded-xl
+          px-1.5 md:px-2 py-1 md:py-1.5 cursor-pointer select-none z-10"
         style={{
           willChange: 'left, bottom',
           background: isDark ? colors.darkBg : colors.bg,
           border: `1px solid ${isDark ? colors.darkBorder : colors.border}`,
           backdropFilter: 'blur(8px)',
         }}
-        whileHover={{ scale: 1.2, zIndex: 50 }}
+        whileHover={{ scale: 1.15, zIndex: 50 }}
       >
         {/* Badge */}
         <div className="flex items-center gap-0.5 mb-px md:mb-0.5">
@@ -151,12 +151,12 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
               }}
             >
               <div
-                className="rounded-xl px-3.5 py-3 text-left"
+                className="rounded-xl px-4 py-3.5 text-left"
                 style={{
                   width: TOOLTIP_W,
-                  background: isDark ? '#1e2030' : '#1a1d26',
+                  background: isDark ? '#181818' : '#1a1d26',
                   color: isDark ? '#e5e7eb' : '#f3f4f6',
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(163,230,53,0.1)',
                 }}
               >
                 {/* Arrow */}
@@ -164,7 +164,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                   className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45"
                   style={{
                     ...(tooltipPos.above ? { bottom: -5 } : { top: -5 }),
-                    background: isDark ? '#1e2030' : '#1a1d26',
+                    background: isDark ? '#181818' : '#1a1d26',
                   }}
                 />
 

@@ -60,16 +60,16 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
   const handleDelete = (id: string) => { setError(null); onDelete(id); };
 
   const inputClass = 'w-full px-2.5 py-1.5 text-sm rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-colors';
-  const cellClass = 'px-3 py-2.5 text-sm whitespace-nowrap';
-  const thClass = 'px-3 py-3 text-left text-[10px] font-semibold uppercase tracking-wider';
+  const cellClass = 'px-3 py-3 text-sm whitespace-nowrap';
+  const thClass = 'px-3 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider';
 
   const sorted = [...tasks].sort((a, b) => a.daysRemaining - b.daysRemaining);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-3 md:p-5">
+    <div className="flex-1 flex flex-col min-h-0 p-4 md:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
-        <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Task Manager</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+        <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Task Manager</h2>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -78,12 +78,12 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
             <input
               type="text" placeholder="Search tasks..." value={search}
               onChange={e => onSearchChange(e.target.value)}
-              className="w-full sm:w-52 pl-8 pr-3 py-1.5 text-sm rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              className="w-full sm:w-60 pl-8 pr-3 py-2 text-sm rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
             />
           </div>
           <button onClick={() => exportCSV(allTasks)}
-            className="rounded-lg text-sm font-medium px-3 py-1.5 shrink-0 transition-all duration-150 flex items-center gap-1.5"
+            className="rounded-lg text-sm font-medium px-4 py-2 shrink-0 transition-all duration-150 flex items-center gap-1.5"
             style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -95,7 +95,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
             Export
           </button>
           <button onClick={() => { setShowAddRow(!showAddRow); setError(null); }}
-            className="rounded-lg text-sm font-semibold px-4 py-1.5 transition-all duration-150 shrink-0"
+            className="rounded-lg text-sm font-semibold px-5 py-2 transition-all duration-150 shrink-0"
             style={{ background: showAddRow ? 'var(--text-tertiary)' : 'var(--accent)', color: '#0a0a0a', boxShadow: showAddRow ? 'none' : '0 0 12px rgba(163,230,53,0.15)' }}
           >
             {showAddRow ? 'Cancel' : '+ Add Task'}
@@ -110,9 +110,9 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
       )}
 
       {/* Mobile card view */}
-      <div className="block md:hidden flex-1 overflow-auto space-y-2 scrollbar-thin">
+      <div className="block md:hidden flex-1 overflow-auto space-y-3 scrollbar-thin">
         {showAddRow && (
-          <div className="p-3 rounded-xl space-y-2" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent)' }}>
+          <div className="p-4 rounded-xl space-y-3" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent)' }}>
             <input className={inputClass} style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
               value={newRow.title} onChange={e => setNewRow({ ...newRow, title: e.target.value })} placeholder="Task title *" autoFocus />
             <div className="grid grid-cols-2 gap-2">
@@ -132,7 +132,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
               <input type="number" min={0} max={100} className={`${inputClass} w-16`} style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
                 value={newRow.importanceScore} onChange={e => setNewRow({ ...newRow, importanceScore: Number(e.target.value) })} />
               <div className="flex-1" />
-              <button onClick={handleAdd} className="text-xs font-medium text-white rounded-lg px-4 py-1.5" style={{ background: '#10b981' }}>Save</button>
+              <button onClick={handleAdd} className="text-xs font-medium rounded-lg px-4 py-1.5" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button>
             </div>
           </div>
         )}
@@ -144,7 +144,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
       {/* Desktop table */}
       <div className="hidden md:flex flex-1 overflow-auto rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
         <table className="w-full">
-          <thead className="sticky top-0 z-10" style={{ background: 'var(--bg-inset)', borderBottom: '1px solid var(--border)' }}>
+          <thead className="sticky top-0 z-10" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
             <tr>
               <th className={thClass} style={{ color: 'var(--text-tertiary)' }}>#</th>
               <th className={thClass} style={{ color: 'var(--text-tertiary)' }}>Title</th>
@@ -171,7 +171,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
-                <td className={cellClass}><button onClick={handleAdd} className="text-xs font-medium text-white rounded-md px-3 py-1" style={{ background: '#10b981' }}>Save</button></td>
+                <td className={cellClass}><button onClick={handleAdd} className="text-xs font-medium rounded-md px-3 py-1" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button></td>
               </tr>
             )}
 
@@ -197,7 +197,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                     <td className={cellClass}><TimelineBadge task={task} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
-                      <button onClick={() => saveEdit(task.id)} className="text-xs font-medium text-white rounded-md px-2.5 py-1 mr-1" style={{ background: '#10b981' }}>Save</button>
+                      <button onClick={() => saveEdit(task.id)} className="text-xs font-medium rounded-md px-2.5 py-1 mr-1" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button>
                       <button onClick={() => setEditingId(null)} className="text-xs font-medium rounded-md px-2.5 py-1" style={{ color: 'var(--text-tertiary)' }}>Cancel</button>
                     </td>
                   </>
@@ -243,7 +243,7 @@ function MobileTaskCard({ task, index, onEdit, onDelete }: { task: Task; index: 
   };
 
   return (
-    <div className="p-3 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderLeftWidth: '3px', borderLeftColor: quadrantColors[task.quadrant] || '#9ca3af' }}>
+    <div className="p-4 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderLeftWidth: '3px', borderLeftColor: quadrantColors[task.quadrant] || '#9ca3af' }}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">

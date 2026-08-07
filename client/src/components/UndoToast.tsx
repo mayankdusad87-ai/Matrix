@@ -31,11 +31,12 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] animate-slide-up">
       <div
-        className="rounded-xl px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[90vw]"
+        className="rounded-xl px-5 py-4 flex items-center gap-3 min-w-[340px] max-w-[90vw]"
         style={{
-          background: 'var(--bg-surface-elevated)',
+          background: 'rgba(24,24,24,0.95)',
+          backdropFilter: 'blur(12px)',
           border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-xl)',
+          boxShadow: '0 0 20px rgba(163,230,53,0.08), var(--shadow-xl)',
           color: 'var(--text-primary)',
         }}
       >
@@ -55,7 +56,7 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
         </div>
         <button
           onClick={onUndo}
-          className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-150"
+          className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-150"
           style={{ background: 'var(--accent)', color: '#0a0a0a' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}

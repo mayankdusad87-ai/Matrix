@@ -67,12 +67,12 @@ export default function Analytics({ tasks }: Props) {
     ? Math.round(activeTasks.reduce((sum, t) => sum + (t.timelineProgress || 0), 0) / activeTasks.length) : 0;
 
   return (
-    <div className="flex-1 overflow-auto p-4 md:p-6 scrollbar-thin">
-      <div className="max-w-5xl mx-auto space-y-5">
-        <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Analytics</h2>
+    <div className="flex-1 overflow-auto p-5 md:p-8 scrollbar-thin">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Analytics</h2>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <SummaryCard label="Completion Rate" value={`${completionRate}%`} sublabel={`${completed} of ${total} tasks`} accent="#10b981" />
           <SummaryCard label="Avg Timeline Used" value={`${avgProgress}%`} sublabel={`${activeTasks.length} active tasks`} accent="#3b82f6" />
           <SummaryCard label="Overdue" value={String(overdueTasks.length)} sublabel={overdueTasks.length > 0 ? 'Need attention' : 'All clear'} accent="#ef4444" />
@@ -80,11 +80,11 @@ export default function Analytics({ tasks }: Props) {
         </div>
 
         {/* Quadrant distribution */}
-        <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-tertiary)' }}>
+        <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-tertiary)' }}>
             Quadrant Distribution
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {Object.entries(QUADRANT_CONFIG).map(([quadrant, cfg]) => {
               const count = quadrantCounts[quadrant] || 0;
               const pct = total > 0 ? Math.round((count / total) * 100) : 0;
@@ -92,7 +92,7 @@ export default function Analytics({ tasks }: Props) {
                 <div key={quadrant} className="flex items-center gap-3">
                   <span className="w-5 shrink-0" style={{ color: cfg.color }}>{cfg.icon}</span>
                   <span className="text-sm font-medium w-28 shrink-0" style={{ color: 'var(--text-secondary)' }}>{quadrant}</span>
-                  <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
+                  <div className="flex-1 h-7 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
                     <div
                       className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
                       style={{ width: `${Math.max(pct, 3)}%`, background: cfg.color }}
@@ -109,7 +109,7 @@ export default function Analytics({ tasks }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Approaching urgency */}
-          <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
               Approaching Urgency
             </h3>
@@ -119,7 +119,7 @@ export default function Analytics({ tasks }: Props) {
             ) : (
               <div className="space-y-1.5">
                 {approachingUrgency.map(t => (
-                  <div key={t.id} className="flex items-center justify-between py-2 px-2.5 rounded-lg" style={{ background: 'rgba(249,115,22,0.05)' }}>
+                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(249,115,22,0.05)' }}>
                     <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
                     <span className="text-xs font-bold shrink-0 ml-2" style={{ color: '#f97316' }}>
                       {t.daysRemaining - 7}d to urgent
@@ -131,7 +131,7 @@ export default function Analytics({ tasks }: Props) {
           </div>
 
           {/* Now urgent */}
-          <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
               Now Urgent
             </h3>
@@ -141,7 +141,7 @@ export default function Analytics({ tasks }: Props) {
             ) : (
               <div className="space-y-1.5">
                 {recentlyUrgent.map(t => (
-                  <div key={t.id} className="flex items-center justify-between py-2 px-2.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.05)' }}>
+                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.05)' }}>
                     <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
                     <span className="text-xs font-bold shrink-0 ml-2" style={{ color: '#ef4444' }}>
                       {t.daysRemaining === 0 ? 'Due today!' : `${t.daysRemaining}d left`}
@@ -161,7 +161,7 @@ export default function Analytics({ tasks }: Props) {
             </h3>
             <div className="space-y-1.5">
               {overdueTasks.map(t => (
-                <div key={t.id} className="flex items-center justify-between py-2 px-2.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.04)' }}>
+                <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.04)' }}>
                   <div className="truncate">
                     <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
                     <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>Due: {t.dueDate}</span>
@@ -180,11 +180,11 @@ export default function Analytics({ tasks }: Props) {
           <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-tertiary)' }}>
             Average Importance by Quadrant
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(QUADRANT_CONFIG).map(([quadrant, cfg]) => (
-              <div key={quadrant} className="rounded-lg p-3 text-center" style={{ background: `${cfg.color}08`, border: `1px solid ${cfg.color}15` }}>
+              <div key={quadrant} className="rounded-lg p-4 text-center" style={{ background: `${cfg.color}08`, border: `1px solid ${cfg.color}15` }}>
                 <span style={{ color: cfg.color }}>{cfg.icon}</span>
-                <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: cfg.color }}>{avgImportance[quadrant]}</p>
+                <p className="text-3xl font-bold tabular-nums mt-1" style={{ color: cfg.color }}>{avgImportance[quadrant]}</p>
                 <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{quadrant}</p>
               </div>
             ))}
@@ -197,10 +197,10 @@ export default function Analytics({ tasks }: Props) {
 
 function SummaryCard({ label, value, sublabel, accent }: { label: string; value: string; sublabel: string; accent: string }) {
   return (
-    <div className="rounded-xl p-3.5 md:p-4" style={{ background: `${accent}08`, border: `1px solid ${accent}15` }}>
+    <div className="rounded-xl p-4 md:p-5" style={{ background: `${accent}08`, border: `1px solid ${accent}15`, boxShadow: `0 0 20px ${accent}10` }}>
       <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
-      <p className="text-2xl md:text-3xl font-bold tabular-nums mt-1" style={{ color: accent }}>{value}</p>
-      <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{sublabel}</p>
+      <p className="text-3xl md:text-4xl font-bold tabular-nums mt-1.5" style={{ color: accent }}>{value}</p>
+      <p className="text-[11px] mt-1" style={{ color: 'var(--text-tertiary)' }}>{sublabel}</p>
     </div>
   );
 }
