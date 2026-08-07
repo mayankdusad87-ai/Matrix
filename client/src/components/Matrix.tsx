@@ -123,12 +123,10 @@ function SettingsDropdown({
             </div>
             {isCustomMedian ? (
               <div className="flex items-center gap-3">
-                <input
-                  type="range" min={10} max={90}
+                <input type="range" min={10} max={90}
                   value={settings.medianOverride ?? autoMedian}
                   onChange={e => onChange({ ...settings, medianOverride: Number(e.target.value) })}
-                  className="flex-1 h-1.5"
-                />
+                  className="flex-1 h-1.5" />
                 <span className="text-sm font-semibold tabular-nums w-8 text-right" style={{ color: 'var(--accent)' }}>
                   {settings.medianOverride}
                 </span>
@@ -139,7 +137,7 @@ function SettingsDropdown({
               </p>
             )}
             <p className="text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
-              Tasks above this line are "high importance"
+              Drag the horizontal line on the matrix to adjust
             </p>
           </div>
 
@@ -156,18 +154,16 @@ function SettingsDropdown({
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <input
-                type="range" min={1} max={30}
+              <input type="range" min={1} max={30}
                 value={settings.urgencyDays}
                 onChange={e => onChange({ ...settings, urgencyDays: Number(e.target.value) })}
-                className="flex-1 h-1.5"
-              />
+                className="flex-1 h-1.5" />
               <span className="text-sm font-semibold tabular-nums w-8 text-right" style={{ color: 'var(--accent)' }}>
                 {settings.urgencyDays}d
               </span>
             </div>
             <p className="text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
-              Tasks due within {settings.urgencyDays} day{settings.urgencyDays !== 1 ? 's' : ''} move to the urgent zone
+              Drag the vertical line on the matrix to adjust
             </p>
           </div>
 
@@ -207,7 +203,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
   const median = matrixSettings.medianOverride ?? (tasks.length > 0 ? tasks[0].median : 50);
 
   const yLabels = useMemo(() => {
-    const base = [0, 20, 40, 60, 80, 100];
+    const base = [0, 25, 50, 75, 100];
     if (!base.includes(median)) {
       base.push(median);
       base.sort((a, b) => a - b);
@@ -257,7 +253,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     return () => window.removeEventListener('resize', measureContainer);
   }, [measureContainer]);
 
-  /* ── Draggable median line ── */
+  /* ── Draggable median line (Y-axis) ── */
   const [draggingMedian, setDraggingMedian] = useState(false);
   const [hoveringMedian, setHoveringMedian] = useState(false);
 
@@ -286,7 +282,43 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     };
   }, [draggingMedian, handleMedianDrag]);
 
+  /* ── Draggable urgency line (X-axis) ── */
+  const [draggingUrgency, setDraggingUrgency] = useState(false);
+  const [hoveringUrgency, setHoveringUrgency] = useState(false);
+
+  const handleUrgencyDrag = useCallback((clientX: number) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Map pixel position to urgency days (1-30)
+    // The urgency line is at 70% of the grid width visually
+    // So we map the entire width to days: left = maxDays, right = 0
+    const xPct = (clientX - rect.left) / rect.width;
+    // Convert x position to days: further right = fewer days (more urgent)
+    const days = Math.round(Math.max(1, Math.min(30, maxDaysLeft * (1 - xPct))));
+    onSettingsChange({ ...matrixSettings, urgencyDays: days });
+  }, [matrixSettings, onSettingsChange, maxDaysLeft]);
+
+  useEffect(() => {
+    if (!draggingUrgency) return;
+    const onMove = (e: MouseEvent) => { e.preventDefault(); handleUrgencyDrag(e.clientX); };
+    const onTouchMove = (e: TouchEvent) => { handleUrgencyDrag(e.touches[0].clientX); };
+    const onUp = () => { setDraggingUrgency(false); setHoveringUrgency(false); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, [draggingUrgency, handleUrgencyDrag]);
+
   const isDark = document.documentElement.classList.contains('dark');
+  const medianActive = draggingMedian || hoveringMedian;
+  const urgencyActive = draggingUrgency || hoveringUrgency;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 px-2 md:px-4 pb-2 md:pb-4 gap-1.5 md:gap-2.5">
@@ -295,10 +327,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
         <div className="flex items-center gap-2.5 md:gap-4 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
           {Q.map(q => (
             <span key={q.key} className="flex items-center gap-1.5 whitespace-nowrap">
-              <span
-                className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0"
-                style={{ background: isDark ? q.darkColor : q.color }}
-              />
+              <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0" style={{ background: isDark ? q.darkColor : q.color }} />
               <span style={{ color: 'var(--text-secondary)' }}>{q.key}</span>
               <span className="font-bold tabular-nums" style={{ color: 'var(--text-quaternary)' }}>{quadrantCounts[q.key]}</span>
             </span>
@@ -318,11 +347,21 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
       {/* ── Matrix grid ── */}
       <div className="flex-1 flex justify-center min-h-[280px] md:min-h-0">
         <div className="flex w-full max-w-7xl gap-0">
-          {/* Y-axis labels */}
-          <div className="flex flex-col justify-between py-1 pr-1 md:pr-2 text-[9px] md:text-[11px] font-medium w-6 md:w-9 shrink-0 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
-            {[...yLabels].reverse().map(v => (
-              <span key={v} className={`text-right leading-none ${v === median ? 'font-bold' : ''}`} style={v === median ? { color: 'var(--accent)' } : undefined}>{v}</span>
-            ))}
+
+          {/* Y-axis: label + tick marks */}
+          <div className="flex flex-col shrink-0 pr-1 md:pr-2">
+            {/* Axis title — prominent */}
+            <div className="flex items-center justify-center mb-1">
+              <span className="text-[10px] md:text-[12px] font-bold uppercase tracking-[0.08em]" style={{ color: 'var(--text-secondary)' }}>
+                Importance
+              </span>
+            </div>
+            {/* Tick marks */}
+            <div className="flex-1 flex flex-col justify-between py-1 text-[9px] md:text-[11px] font-medium w-6 md:w-9 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
+              {[...yLabels].reverse().map(v => (
+                <span key={v} className={`text-right leading-none ${v === median ? 'font-bold' : ''}`} style={v === median ? { color: 'var(--accent)' } : undefined}>{v}</span>
+              ))}
+            </div>
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
@@ -332,86 +371,98 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
             >
               {/* Quadrant fills */}
-              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: `linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.07) 100%)` }} />
-              <div className="absolute top-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impH, background: `linear-gradient(135deg, rgba(59,130,246,0.02) 0%, rgba(59,130,246,0.05) 100%)` }} />
-              <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: urgW, height: impL, background: `linear-gradient(135deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.05) 100%)` }} />
-              <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impL, background: `linear-gradient(135deg, rgba(148,163,184,0.01) 0%, rgba(148,163,184,0.03) 100%)` }} />
+              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: 'linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.07) 100%)' }} />
+              <div className="absolute top-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impH, background: 'linear-gradient(135deg, rgba(59,130,246,0.02) 0%, rgba(59,130,246,0.05) 100%)' }} />
+              <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: urgW, height: impL, background: 'linear-gradient(135deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.05) 100%)' }} />
+              <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impL, background: 'linear-gradient(135deg, rgba(148,163,184,0.01) 0%, rgba(148,163,184,0.03) 100%)' }} />
 
-              {/* Horizontal grid */}
+              {/* Horizontal grid lines */}
               {yLabels.map(v => (
                 v !== median ? (
-                  <div
-                    key={`h-${v}`}
-                    className="absolute left-0 right-0"
-                    style={{ bottom: `${v}%`, borderTop: '1px solid var(--border-subtle)' }}
-                  />
+                  <div key={`h-${v}`} className="absolute left-0 right-0" style={{ bottom: `${v}%`, borderTop: '1px solid var(--border-subtle)' }} />
                 ) : null
               ))}
 
-              {/* Draggable median line */}
+              {/* ═══ Draggable MEDIAN line (horizontal) ═══ */}
               <div
-                className={`absolute left-0 right-0 z-[8] group select-none ${draggingMedian ? 'cursor-grabbing' : 'cursor-ns-resize'}`}
+                className={`absolute left-0 right-0 z-[8] select-none ${draggingMedian ? 'cursor-grabbing' : 'cursor-ns-resize'}`}
                 style={{ bottom: `${median}%` }}
                 onMouseDown={e => { e.preventDefault(); setDraggingMedian(true); }}
                 onTouchStart={() => setDraggingMedian(true)}
                 onMouseEnter={() => setHoveringMedian(true)}
                 onMouseLeave={() => { if (!draggingMedian) setHoveringMedian(false); }}
               >
-                <div className="absolute left-0 right-0 -top-3 h-6 md:-top-4 md:h-8" />
-                <div
-                  className="absolute left-0 right-0 top-0 border-t-[1.5px] border-dashed transition-colors duration-150"
-                  style={{ borderColor: draggingMedian || hoveringMedian ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.25)' : 'rgba(99,102,241,0.3)' }}
-                />
+                {/* Wide hit area */}
+                <div className="absolute left-0 right-0 -top-4 h-8 md:-top-5 md:h-10" />
+                {/* Visible line */}
+                <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed transition-colors duration-150"
+                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.30)' : 'rgba(99,102,241,0.35)' }} />
               </div>
 
-              {/* Median label */}
+              {/* Median drag handle label */}
               <div
-                className={`absolute left-1 md:left-2.5 z-[9] select-none ${draggingMedian ? 'cursor-grabbing pointer-events-none' : 'cursor-ns-resize'}`}
+                className={`absolute left-2 md:left-3 z-[9] select-none ${draggingMedian ? 'cursor-grabbing pointer-events-none' : 'cursor-ns-resize'}`}
                 style={{ bottom: `${median}%` }}
                 onMouseDown={e => { e.preventDefault(); setDraggingMedian(true); }}
                 onTouchStart={() => setDraggingMedian(true)}
               >
-                <span
-                  className="text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] -translate-y-1/2 inline-flex items-center gap-0.5 transition-all duration-150"
+                <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md -translate-y-1/2 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: 'var(--accent)',
-                    background: draggingMedian || hoveringMedian ? 'var(--accent-muted)' : 'var(--bg-surface)',
-                    border: `1px solid ${draggingMedian || hoveringMedian ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.25)'}`,
-                    boxShadow: draggingMedian || hoveringMedian ? 'var(--shadow-sm)' : 'none',
+                    color: medianActive ? '#fff' : 'var(--accent)',
+                    background: medianActive ? 'var(--accent)' : 'var(--bg-surface)',
+                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.3)' : 'rgba(99,102,241,0.35)'}`,
+                    boxShadow: medianActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
                   }}
                 >
-                  <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" d="M7 8l5-4 5 4M7 16l5 4 5-4" />
                   </svg>
-                  <span className="hidden md:inline">Median: </span>{median}
+                  <span className="hidden md:inline">Importance:</span> {median}
                 </span>
               </div>
 
-              {/* Vertical grid */}
+              {/* Vertical grid lines */}
               {xLabels.map(({ pct }) => (
-                <div
-                  key={`v-${pct}`}
-                  className="absolute top-0 bottom-0 z-[5]"
-                  style={{
-                    left: `${pct}%`,
-                    borderLeft: pct === URGENCY_DIVIDER
-                      ? `1.5px dashed ${isDark ? 'rgba(129,140,248,0.25)' : 'rgba(99,102,241,0.3)'}`
-                      : '1px solid var(--border-subtle)',
-                  }}
-                />
+                pct !== URGENCY_DIVIDER ? (
+                  <div key={`v-${pct}`} className="absolute top-0 bottom-0" style={{ left: `${pct}%`, borderLeft: '1px solid var(--border-subtle)' }} />
+                ) : null
               ))}
 
-              {/* Urgency label */}
-              <div className="absolute bottom-1 md:bottom-2.5 z-[6] pointer-events-none" style={{ left: `${URGENCY_DIVIDER}%` }}>
-                <span
-                  className="text-[8px] md:text-[10px] font-semibold px-1 md:px-1.5 py-0.5 rounded-[4px] translate-x-0.5 md:translate-x-1 inline-block"
+              {/* ═══ Draggable URGENCY line (vertical) ═══ */}
+              <div
+                className={`absolute top-0 bottom-0 z-[8] select-none ${draggingUrgency ? 'cursor-grabbing' : 'cursor-ew-resize'}`}
+                style={{ left: `${URGENCY_DIVIDER}%` }}
+                onMouseDown={e => { e.preventDefault(); setDraggingUrgency(true); }}
+                onTouchStart={() => setDraggingUrgency(true)}
+                onMouseEnter={() => setHoveringUrgency(true)}
+                onMouseLeave={() => { if (!draggingUrgency) setHoveringUrgency(false); }}
+              >
+                {/* Wide hit area */}
+                <div className="absolute top-0 bottom-0 -left-4 w-8 md:-left-5 md:w-10" />
+                {/* Visible line */}
+                <div className="absolute top-0 bottom-0 left-0 border-l-2 border-dashed transition-colors duration-150"
+                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.30)' : 'rgba(99,102,241,0.35)' }} />
+              </div>
+
+              {/* Urgency drag handle label */}
+              <div
+                className={`absolute bottom-2 md:bottom-3 z-[9] select-none ${draggingUrgency ? 'cursor-grabbing pointer-events-none' : 'cursor-ew-resize'}`}
+                style={{ left: `${URGENCY_DIVIDER}%` }}
+                onMouseDown={e => { e.preventDefault(); setDraggingUrgency(true); }}
+                onTouchStart={() => setDraggingUrgency(true)}
+              >
+                <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md translate-x-1 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: 'var(--accent)',
-                    background: 'var(--bg-surface)',
-                    border: `1px solid ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.25)'}`,
+                    color: urgencyActive ? '#fff' : 'var(--accent)',
+                    background: urgencyActive ? 'var(--accent)' : 'var(--bg-surface)',
+                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.3)' : 'rgba(99,102,241,0.35)'}`,
+                    boxShadow: urgencyActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
                   }}
                 >
-                  {urgencyDays}d
+                  <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M8 7l-4 5 4 5M16 7l4 5-4 5" />
+                  </svg>
+                  <span className="hidden md:inline">Urgency:</span> {urgencyDays}d
                 </span>
               </div>
 
@@ -448,22 +499,22 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               })}
             </div>
 
-            {/* X-axis */}
-            <div className="flex justify-between pt-1 md:pt-1.5 text-[9px] md:text-[11px] font-medium px-0.5 md:px-1 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
+            {/* X-axis: tick marks + prominent title */}
+            <div className="flex justify-between pt-1.5 md:pt-2 text-[9px] md:text-[11px] font-medium px-0.5 md:px-1 tabular-nums" style={{ color: 'var(--text-quaternary)' }}>
               {xLabels.map(({ pct, label }) => (
-                <span key={pct} style={pct === URGENCY_DIVIDER ? { color: 'var(--accent)', fontWeight: 700 } : undefined}>
-                  {label}
-                </span>
+                <span key={pct} style={pct === URGENCY_DIVIDER ? { color: 'var(--accent)', fontWeight: 700 } : undefined}>{label}</span>
               ))}
             </div>
-            <div className="text-center text-[9px] md:text-[11px] font-medium tracking-wide" style={{ color: 'var(--text-quaternary)' }}>
-              Urgency →
+            <div className="text-center mt-0.5 md:mt-1">
+              <span className="text-[10px] md:text-[12px] font-bold uppercase tracking-[0.08em]" style={{ color: 'var(--text-secondary)' }}>
+                Urgency →
+              </span>
             </div>
           </div>
 
-          {/* Y-axis label */}
-          <div className="flex items-center ml-0.5 md:ml-1.5">
-            <span className="text-[9px] md:text-[11px] font-medium [writing-mode:vertical-rl] rotate-180 tracking-wide" style={{ color: 'var(--text-quaternary)' }}>
+          {/* Y-axis rotated label — large, prominent */}
+          <div className="flex items-center ml-1 md:ml-2">
+            <span className="text-[10px] md:text-[12px] font-bold uppercase tracking-[0.08em] [writing-mode:vertical-rl] rotate-180" style={{ color: 'var(--text-secondary)' }}>
               ← Importance
             </span>
           </div>
