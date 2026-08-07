@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import Task from '../models/task';
+import { supabase } from '../database';
+import { snakeToCamel, camelToSnake } from '../models/task';
 import { computeTaskFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS } from '../utils/calculations';
 
 const router = Router();
@@ -12,19 +13,20 @@ function parseOverrides(req: Request) {
 }
 
 async function getAllEnriched(medianOverride: number | null = null, urgencyDays: number = DEFAULT_URGENCY_DAYS) {
-  const allTasks = await Task.find().lean();
-  const plains = allTasks.map(t => ({ ...t, id: t._id }));
-  const scores = plains.map(p => p.importanceScore);
+  const { data, error } = await supabase.from('tasks').select('*');
+  if (error) throw error;
+  const allTasks = (data || []).map(snakeToCamel);
+  const scores = allTasks.map(p => p.importanceScore);
   const autoMedian = calculateMedian(scores);
   const median = medianOverride !== null && !isNaN(medianOverride) ? medianOverride : autoMedian;
   const today = new Date();
   const maxDays = Math.max(
-    ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+    ...allTasks.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
     urgencyDays
   );
-  return plains.map(plain => ({
-    ...plain,
-    ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate, urgencyDays),
+  return allTasks.map(task => ({
+    ...task,
+    ...computeTaskFields(task.dueDate, task.importanceScore, median, maxDays, task.startDate, urgencyDays),
     autoMedian,
   }));
 }
@@ -79,7 +81,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { medianOverride, urgencyDays } = parseOverrides(req);
     const enriched = await getAllEnriched(medianOverride, urgencyDays);
-    const task = enriched.find(p => String(p._id) === req.params.id);
+    const task = enriched.find(p => p.id === req.params.id);
     if (!task) { res.status(404).json({ error: 'Task not found' }); return; }
     res.json(task);
   } catch (err) {
@@ -89,17 +91,25 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const task = await Task.create(req.body);
-    const allTasks = await Task.find().lean();
-    const plains = allTasks.map(t => ({ ...t, id: t._id }));
-    const median = calculateMedian(plains.map(p => p.importanceScore));
+    const insertData = camelToSnake(req.body);
+    const { data: inserted, error } = await supabase.from('tasks').insert(insertData).select().single();
+    if (error) throw error;
+    const task = snakeToCamel(inserted);
+
+    // Re-fetch all to compute with updated median
+    const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+    if (allErr) throw allErr;
+    const allTasks = (allData || []).map(snakeToCamel);
+    const median = calculateMedian(allTasks.map(p => p.importanceScore));
     const today = new Date();
     const maxDays = Math.max(
-      ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+      ...allTasks.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
       DEFAULT_URGENCY_DAYS
     );
-    const plain = task.toJSON();
-    res.status(201).json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate) });
+    res.status(201).json({
+      ...task,
+      ...computeTaskFields(task.dueDate, task.importanceScore, median, maxDays, task.startDate),
+    });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
@@ -107,18 +117,29 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!task) { res.status(404).json({ error: 'Task not found' }); return; }
-    const allTasks = await Task.find().lean();
-    const plains = allTasks.map(t => ({ ...t, id: t._id }));
-    const median = calculateMedian(plains.map(p => p.importanceScore));
+    const updateData = camelToSnake(req.body);
+    const { data: updated, error } = await supabase
+      .from('tasks')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error || !updated) { res.status(404).json({ error: 'Task not found' }); return; }
+    const task = snakeToCamel(updated);
+
+    const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+    if (allErr) throw allErr;
+    const allTasks = (allData || []).map(snakeToCamel);
+    const median = calculateMedian(allTasks.map(p => p.importanceScore));
     const today = new Date();
     const maxDays = Math.max(
-      ...plains.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
+      ...allTasks.map(p => calculateDaysRemaining(new Date(p.dueDate), today)),
       DEFAULT_URGENCY_DAYS
     );
-    const plain = task.toJSON();
-    res.json({ ...plain, ...computeTaskFields(plain.dueDate, plain.importanceScore, median, maxDays, plain.startDate) });
+    res.json({
+      ...task,
+      ...computeTaskFields(task.dueDate, task.importanceScore, median, maxDays, task.startDate),
+    });
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
@@ -126,8 +147,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
-    if (!task) { res.status(404).json({ error: 'Task not found' }); return; }
+    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });

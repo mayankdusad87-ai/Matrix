@@ -1,18 +1,22 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, setCors, type TaskLike } from '../_shared';
+import { getSupabase, snakeToCamel, camelToSnake, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, setCors, type TaskLike } from '../_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    await connectDB();
+    const supabase = getSupabase();
     const id = req.query.id as string;
 
     if (req.method === 'GET') {
-      const task = await Task.findById(id).lean() as TaskLike | null;
-      if (!task) return res.status(404).json({ error: 'Task not found' });
-      const allTasks = await Task.find().lean() as TaskLike[];
+      const { data: row, error } = await supabase.from('tasks').select('*').eq('id', id).single();
+      if (error || !row) return res.status(404).json({ error: 'Task not found' });
+      const task = snakeToCamel(row);
+
+      const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+      if (allErr) throw allErr;
+      const allTasks = (allData || []).map(snakeToCamel);
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
       const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
@@ -20,19 +24,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const task = await Task.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-      if (!task) return res.status(404).json({ error: 'Task not found' });
-      const allTasks = await Task.find().lean() as TaskLike[];
+      const updateData = camelToSnake(req.body);
+      const { data: row, error } = await supabase.from('tasks').update(updateData).eq('id', id).select().single();
+      if (error || !row) return res.status(404).json({ error: 'Task not found' });
+      const task = snakeToCamel(row);
+
+      const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+      if (allErr) throw allErr;
+      const allTasks = (allData || []).map(snakeToCamel);
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
       const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
-      const plain = task.toObject() as unknown as TaskLike;
-      return res.json(computeFields(plain, median, maxDays));
+      return res.json(computeFields(task, median, maxDays));
     }
 
     if (req.method === 'DELETE') {
-      const task = await Task.findByIdAndDelete(id);
-      if (!task) return res.status(404).json({ error: 'Task not found' });
+      const { error } = await supabase.from('tasks').delete().eq('id', id);
+      if (error) throw error;
       return res.status(204).end();
     }
 

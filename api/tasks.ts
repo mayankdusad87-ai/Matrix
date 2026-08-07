@@ -1,16 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, parseOverrides, setCors, type TaskLike } from './_shared';
+import { getSupabase, snakeToCamel, camelToSnake, computeFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS, parseOverrides, setCors, type TaskLike } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    await connectDB();
+    const supabase = getSupabase();
 
     if (req.method === 'GET') {
       const { medianOverride, urgencyDays } = parseOverrides(req.query as Record<string, string | string[] | undefined>);
-      const allTasks = await Task.find().lean() as TaskLike[];
+      const { data, error } = await supabase.from('tasks').select('*');
+      if (error) throw error;
+      const allTasks = (data || []).map(snakeToCamel);
       const autoMedian = calculateMedian(allTasks.map(t => t.importanceScore));
       const median = medianOverride !== null ? medianOverride : autoMedian;
       const today = new Date();
@@ -30,13 +32,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      const task = await Task.create(req.body);
-      const allTasks = await Task.find().lean() as TaskLike[];
+      const insertData = camelToSnake(req.body);
+      const { data: inserted, error } = await supabase.from('tasks').insert(insertData).select().single();
+      if (error) throw error;
+      const task = snakeToCamel(inserted);
+
+      // Re-fetch all to compute fields with updated median
+      const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+      if (allErr) throw allErr;
+      const allTasks = (allData || []).map(snakeToCamel);
       const median = calculateMedian(allTasks.map(t => t.importanceScore));
       const today = new Date();
       const maxDays = Math.max(...allTasks.map(t => calculateDaysRemaining(t.dueDate, today)), DEFAULT_URGENCY_DAYS);
-      const plain = task.toObject() as unknown as TaskLike;
-      return res.status(201).json(computeFields(plain, median, maxDays));
+      return res.status(201).json(computeFields(task, median, maxDays));
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

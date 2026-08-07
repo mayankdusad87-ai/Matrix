@@ -1,48 +1,83 @@
-import mongoose from 'mongoose';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// --- MongoDB Connection (cached for Vercel serverless) ---
-let cached: typeof mongoose | null = null;
+// --- Supabase Client (cached for Vercel serverless) ---
+let supabase: SupabaseClient | null = null;
 
-export async function connectDB() {
-  if (cached) return cached;
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error('MONGODB_URI env var is not set in Vercel');
-  cached = await mongoose.connect(uri, {
-    bufferCommands: false,
-  });
-  return cached;
+export function getSupabase(): SupabaseClient {
+  if (supabase) return supabase;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY env vars must be set');
+  supabase = createClient(url, key);
+  return supabase;
 }
 
-// --- Mongoose Task Model ---
-const taskSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, default: '' },
-    startDate: { type: String, required: true },
-    dueDate: { type: String, required: true },
-    importanceScore: { type: Number, required: true, min: 0, max: 100 },
-    status: {
-      type: String,
-      enum: ['Not Started', 'In Progress', 'Completed', 'On Hold'],
-      default: 'Not Started',
-    },
-    owner: { type: String, default: 'Unassigned' },
-    category: { type: String, default: 'General' },
-    blockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
-  },
-  {
-    timestamps: true,
-    toJSON: {
-      virtuals: true,
-      transform(_doc: unknown, ret: Record<string, unknown>) {
-        ret.id = ret._id;
-        delete ret.__v;
-      },
-    },
-  }
-);
+// --- Snake ↔ Camel mapping ---
+interface SnakeCaseTask {
+  id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  due_date: string;
+  importance_score: number;
+  status: string;
+  owner: string;
+  category: string;
+  blocked_by: string[];
+  created_at: string;
+  updated_at: string;
+}
 
-export const Task = mongoose.models.Task || mongoose.model('Task', taskSchema);
+export interface TaskLike {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  dueDate: string;
+  importanceScore: number;
+  status: string;
+  owner: string;
+  category: string;
+  blockedBy: string[];
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+export function snakeToCamel(row: SnakeCaseTask): TaskLike {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    startDate: row.start_date,
+    dueDate: row.due_date,
+    importanceScore: row.importance_score,
+    status: row.status,
+    owner: row.owner,
+    category: row.category,
+    blockedBy: row.blocked_by || [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function camelToSnake(data: Record<string, unknown>): Record<string, unknown> {
+  const map: Record<string, string> = {
+    startDate: 'start_date',
+    dueDate: 'due_date',
+    importanceScore: 'importance_score',
+    blockedBy: 'blocked_by',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+  };
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data)) {
+    // Skip computed fields that don't exist in the DB
+    if (['_id', '__v', 'today', 'daysRemaining', 'x', 'y', 'quadrant', 'isOverdue', 'median', 'urgencyDays', 'timelineProgress', 'autoMedian'].includes(key)) continue;
+    result[map[key] || key] = value;
+  }
+  return result;
+}
 
 // --- Calculations ---
 export const DEFAULT_URGENCY_DAYS = 7;
@@ -69,20 +104,6 @@ function determineQuadrant(importanceScore: number, daysRemaining: number, media
   if (highImportance && !urgent) return 'Schedule';
   if (!highImportance && urgent) return 'Delegate';
   return 'Deprioritize';
-}
-
-export interface TaskLike {
-  title: string;
-  description: string;
-  dueDate: string;
-  importanceScore: number;
-  startDate?: string;
-  status?: string;
-  owner?: string;
-  category?: string;
-  _id?: unknown;
-  id?: unknown;
-  [key: string]: unknown;
 }
 
 export function computeFields(task: TaskLike, median: number, maxDays: number, urgencyDays: number = DEFAULT_URGENCY_DAYS) {
@@ -115,7 +136,6 @@ export function computeFields(task: TaskLike, median: number, maxDays: number, u
 
   return {
     ...task,
-    id: task._id || task.id,
     today: today.toISOString().split('T')[0],
     daysRemaining,
     x,

@@ -1,15 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB, Task, computeFields, calculateMedian, calculateDaysRemaining, parseOverrides, setCors, type TaskLike } from '../_shared';
+import { getSupabase, snakeToCamel, computeFields, calculateMedian, calculateDaysRemaining, parseOverrides, setCors } from '../_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    await connectDB();
-
+    const supabase = getSupabase();
     const { medianOverride, urgencyDays } = parseOverrides(req.query as Record<string, string | string[] | undefined>);
-    const allTasks = await Task.find().lean() as TaskLike[];
+
+    const { data, error } = await supabase.from('tasks').select('*');
+    if (error) throw error;
+    const allTasks = (data || []).map(snakeToCamel);
     const autoMedian = calculateMedian(allTasks.map(t => t.importanceScore));
     const median = medianOverride !== null ? medianOverride : autoMedian;
     const today = new Date();

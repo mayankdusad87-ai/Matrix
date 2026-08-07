@@ -9,10 +9,10 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.2",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
-    "express": "^4.21.0",
-    "mongoose": "^9.9.1"
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

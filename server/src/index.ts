@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { connectDB } from './database';
 import taskRoutes from './routes/tasks';
 import { errorHandler } from './middleware/errorHandler';
+
+// database.ts import triggers Supabase client init (validates env vars)
+import './database';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,16 +20,6 @@ app.get('/api/health', (_req, res) => {
 
 app.use(errorHandler);
 
-async function start() {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
