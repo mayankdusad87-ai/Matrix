@@ -55,8 +55,8 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
         </div>
         <button
           onClick={onUndo}
-          className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-bold text-white transition-all duration-150"
-          style={{ background: 'var(--accent)' }}
+          className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-150"
+          style={{ background: 'var(--accent)', color: '#0a0a0a' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >

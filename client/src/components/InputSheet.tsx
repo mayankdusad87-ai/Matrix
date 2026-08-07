@@ -95,8 +95,8 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
             Export
           </button>
           <button onClick={() => { setShowAddRow(!showAddRow); setError(null); }}
-            className="rounded-lg text-sm font-medium px-4 py-1.5 transition-all duration-150 shrink-0 text-white"
-            style={{ background: showAddRow ? 'var(--text-tertiary)' : 'var(--accent)' }}
+            className="rounded-lg text-sm font-semibold px-4 py-1.5 transition-all duration-150 shrink-0"
+            style={{ background: showAddRow ? 'var(--text-tertiary)' : 'var(--accent)', color: '#0a0a0a', boxShadow: showAddRow ? 'none' : '0 0 12px rgba(163,230,53,0.15)' }}
           >
             {showAddRow ? 'Cancel' : '+ Add Task'}
           </button>

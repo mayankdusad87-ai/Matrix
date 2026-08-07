@@ -45,7 +45,7 @@ const Q = [
   { key: 'Do Now', color: '#ef4444', darkColor: '#f87171' },
   { key: 'Schedule', color: '#3b82f6', darkColor: '#60a5fa' },
   { key: 'Delegate', color: '#f59e0b', darkColor: '#fbbf24' },
-  { key: 'Deprioritize', color: '#9ca3af', darkColor: '#6b7280' },
+  { key: 'Deprioritize', color: '#6b7280', darkColor: '#525252' },
 ] as const;
 
 /* ── Settings gear dropdown ── */
@@ -396,7 +396,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute left-0 right-0 -top-4 h-8 md:-top-5 md:h-10" />
                 {/* Visible line */}
                 <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.30)' : 'rgba(99,102,241,0.35)' }} />
+                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.30)' : 'rgba(163,230,53,0.35)' }} />
               </div>
 
               {/* Median drag handle label */}
@@ -408,10 +408,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               >
                 <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md -translate-y-1/2 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: medianActive ? '#fff' : 'var(--accent)',
+                    color: medianActive ? '#0a0a0a' : 'var(--accent)',
                     background: medianActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.3)' : 'rgba(99,102,241,0.35)'}`,
-                    boxShadow: medianActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.3)' : 'rgba(101,163,13,0.35)'}`,
+                    boxShadow: medianActive ? '0 0 12px rgba(163,230,53,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -441,7 +441,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute top-0 bottom-0 -left-4 w-8 md:-left-5 md:w-10" />
                 {/* Visible line */}
                 <div className="absolute top-0 bottom-0 left-0 border-l-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.30)' : 'rgba(99,102,241,0.35)' }} />
+                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.30)' : 'rgba(163,230,53,0.35)' }} />
               </div>
 
               {/* Urgency drag handle label */}
@@ -453,10 +453,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               >
                 <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md translate-x-1 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: urgencyActive ? '#fff' : 'var(--accent)',
+                    color: urgencyActive ? '#0a0a0a' : 'var(--accent)',
                     background: urgencyActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(129,140,248,0.3)' : 'rgba(99,102,241,0.35)'}`,
-                    boxShadow: urgencyActive ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.3)' : 'rgba(101,163,13,0.35)'}`,
+                    boxShadow: urgencyActive ? '0 0 12px rgba(163,230,53,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
