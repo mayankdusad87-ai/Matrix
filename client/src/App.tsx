@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
+import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import Filters from './components/Filters';
 import Matrix from './components/Matrix';
@@ -29,7 +31,8 @@ const tabs = [
   )},
 ];
 
-export default function App() {
+function AppContent() {
+  const { user, signOut } = useAuth();
   const {
     tasks, allTasks, stats, loading, filters, setFilters,
     search, setSearch,
@@ -45,11 +48,20 @@ export default function App() {
     }
     return false;
   });
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!showUserMenu) return;
+    const handler = () => setShowUserMenu(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showUserMenu]);
 
   const handleImportanceChange = async (task: Task, newImportance: number) => {
     await updateTask(task.id, { importanceScore: newImportance });
@@ -90,7 +102,7 @@ export default function App() {
           </span>
         </div>
 
-        {/* Navigation + theme */}
+        {/* Navigation + theme + user */}
         <div className="flex items-center gap-1">
           <nav className="flex items-center rounded-lg p-0.5 mr-1" style={{ background: 'var(--bg-inset)' }}>
             {tabs.map(tab => (
@@ -133,6 +145,56 @@ export default function App() {
               </svg>
             )}
           </button>
+
+          {/* User menu */}
+          <div className="relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowUserMenu(!showUserMenu); }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200"
+              style={{
+                background: showUserMenu ? 'var(--bg-inset)' : 'transparent',
+                color: 'var(--text-tertiary)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-inset)')}
+              onMouseLeave={e => { if (!showUserMenu) e.currentTarget.style.background = 'transparent'; }}
+              title="Account"
+            >
+              <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </button>
+
+            {showUserMenu && (
+              <div
+                className="absolute right-0 top-full mt-1 w-56 rounded-xl py-1.5 z-50"
+                style={{
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-xl)',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="px-3 py-2 mb-1" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-quaternary)' }}>Signed in as</p>
+                  <p className="text-sm font-medium truncate mt-0.5" style={{ color: 'var(--text-primary)' }}>
+                    {user?.email}
+                  </p>
+                </div>
+                <button
+                  onClick={signOut}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors"
+                  style={{ color: '#ef4444' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.06)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -200,4 +262,34 @@ export default function App() {
       )}
     </div>
   );
+}
+
+export default function App() {
+  const { user, loading } = useAuth();
+  // Apply persisted theme even on auth page
+  useEffect(() => {
+    const isDark = localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+  }, []);
+
+  // Auth loading spinner
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center" style={{ background: 'var(--bg-page)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--accent)' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>Authenticating…</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated → show auth page
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  // Authenticated → show app
+  return <AppContent />;
 }

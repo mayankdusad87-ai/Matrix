@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 import type { Task, TaskStats, Filters, MatrixSettings } from '../types';
 
 const API = '/api/tasks';
@@ -11,6 +12,16 @@ function loadSettings(): MatrixSettings {
     if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
   } catch { /* ignore */ }
   return DEFAULT_SETTINGS;
+}
+
+/** Get auth headers with current access token */
+async function authHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+  return headers;
 }
 
 export function useTasks() {
@@ -42,8 +53,10 @@ export function useTasks() {
 
   const fetchTasks = useCallback(async () => {
     try {
+      const headers = await authHeaders();
       const qs = buildParams().toString();
-      const res = await fetch(`${API}${qs ? `?${qs}` : ''}`);
+      const res = await fetch(`${API}${qs ? `?${qs}` : ''}`, { headers });
+      if (res.status === 401) return; // not authenticated
       const data = await res.json();
       setTasks(data);
     } catch (err) {
@@ -55,11 +68,13 @@ export function useTasks() {
 
   const fetchStats = useCallback(async () => {
     try {
+      const headers = await authHeaders();
       const params = new URLSearchParams();
       if (matrixSettings.medianOverride !== null) params.set('median', String(matrixSettings.medianOverride));
       if (matrixSettings.urgencyDays !== 7) params.set('urgencyDays', String(matrixSettings.urgencyDays));
       const qs = params.toString();
-      const res = await fetch(`${API}/stats${qs ? `?${qs}` : ''}`);
+      const res = await fetch(`${API}/stats${qs ? `?${qs}` : ''}`, { headers });
+      if (res.status === 401) return;
       const data = await res.json();
       setStats(data);
     } catch (err) {
@@ -73,9 +88,10 @@ export function useTasks() {
   }, [fetchTasks, fetchStats]);
 
   const createTask = async (task: Record<string, unknown>) => {
+    const headers = await authHeaders();
     const res = await fetch(API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(task),
     });
     if (!res.ok) throw new Error('Failed to create task');
@@ -84,9 +100,10 @@ export function useTasks() {
   };
 
   const updateTask = async (id: string, updates: Record<string, unknown>) => {
+    const headers = await authHeaders();
     const res = await fetch(`${API}/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update task');
@@ -101,7 +118,9 @@ export function useTasks() {
     if (!taskToDelete) return;
 
     if (deletedTask) {
-      fetch(`${API}/${deletedTask.id}`, { method: 'DELETE' }).catch(() => {});
+      authHeaders().then(headers => {
+        fetch(`${API}/${deletedTask.id}`, { method: 'DELETE', headers }).catch(() => {});
+      });
     }
 
     setTasks(prev => prev.filter(t => t.id !== id));
@@ -117,7 +136,8 @@ export function useTasks() {
 
   const dismissUndo = useCallback(async () => {
     if (deletedTask) {
-      await fetch(`${API}/${deletedTask.id}`, { method: 'DELETE' }).catch(() => {});
+      const headers = await authHeaders();
+      await fetch(`${API}/${deletedTask.id}`, { method: 'DELETE', headers }).catch(() => {});
       setDeletedTask(null);
       await fetchStats();
     }

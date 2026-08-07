@@ -1,9 +1,36 @@
-import { Router, Request, Response } from 'express';
-import { supabase } from '../database';
+import { Router, Request, Response, NextFunction } from 'express';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { snakeToCamel, camelToSnake } from '../models/task';
 import { computeTaskFields, calculateMedian, calculateDaysRemaining, DEFAULT_URGENCY_DAYS } from '../utils/calculations';
 
 const router = Router();
+
+/** Auth middleware: extract JWT and create authenticated Supabase client */
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Authentication required. Please sign in.' });
+    return;
+  }
+  const token = authHeader.slice(7);
+  if (!token || token.length < 10) {
+    res.status(401).json({ error: 'Invalid authentication token.' });
+    return;
+  }
+  const url = process.env.SUPABASE_URL!;
+  const key = process.env.SUPABASE_ANON_KEY!;
+  (req as any).supabase = createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  next();
+}
+
+router.use(requireAuth);
+
+/** Get the authenticated Supabase client from the request */
+function db(req: Request): SupabaseClient {
+  return (req as any).supabase;
+}
 
 /** Parse optional overrides from query params */
 function parseOverrides(req: Request) {
@@ -12,8 +39,8 @@ function parseOverrides(req: Request) {
   return { medianOverride, urgencyDays };
 }
 
-async function getAllEnriched(medianOverride: number | null = null, urgencyDays: number = DEFAULT_URGENCY_DAYS) {
-  const { data, error } = await supabase.from('tasks').select('*');
+async function getAllEnriched(req: Request, medianOverride: number | null = null, urgencyDays: number = DEFAULT_URGENCY_DAYS) {
+  const { data, error } = await db(req).from('tasks').select('*');
   if (error) throw error;
   const allTasks = (data || []).map(snakeToCamel);
   const scores = allTasks.map(p => p.importanceScore);
@@ -34,7 +61,7 @@ async function getAllEnriched(medianOverride: number | null = null, urgencyDays:
 router.get('/stats', async (req: Request, res: Response) => {
   try {
     const { medianOverride, urgencyDays } = parseOverrides(req);
-    const enriched = await getAllEnriched(medianOverride, urgencyDays);
+    const enriched = await getAllEnriched(req, medianOverride, urgencyDays);
 
     const now = new Date();
     const startOfWeek = new Date(now);
@@ -64,7 +91,7 @@ router.get('/stats', async (req: Request, res: Response) => {
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { medianOverride, urgencyDays } = parseOverrides(req);
-    let enriched = await getAllEnriched(medianOverride, urgencyDays);
+    let enriched = await getAllEnriched(req, medianOverride, urgencyDays);
 
     if (req.query.owner) enriched = enriched.filter(t => t.owner === req.query.owner);
     if (req.query.status) enriched = enriched.filter(t => t.status === req.query.status);
@@ -80,7 +107,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { medianOverride, urgencyDays } = parseOverrides(req);
-    const enriched = await getAllEnriched(medianOverride, urgencyDays);
+    const enriched = await getAllEnriched(req, medianOverride, urgencyDays);
     const task = enriched.find(p => p.id === req.params.id);
     if (!task) { res.status(404).json({ error: 'Task not found' }); return; }
     res.json(task);
@@ -92,12 +119,11 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const insertData = camelToSnake(req.body);
-    const { data: inserted, error } = await supabase.from('tasks').insert(insertData).select().single();
+    const { data: inserted, error } = await db(req).from('tasks').insert(insertData).select().single();
     if (error) throw error;
     const task = snakeToCamel(inserted);
 
-    // Re-fetch all to compute with updated median
-    const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+    const { data: allData, error: allErr } = await db(req).from('tasks').select('*');
     if (allErr) throw allErr;
     const allTasks = (allData || []).map(snakeToCamel);
     const median = calculateMedian(allTasks.map(p => p.importanceScore));
@@ -118,7 +144,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const updateData = camelToSnake(req.body);
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await db(req)
       .from('tasks')
       .update(updateData)
       .eq('id', req.params.id)
@@ -127,7 +153,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (error || !updated) { res.status(404).json({ error: 'Task not found' }); return; }
     const task = snakeToCamel(updated);
 
-    const { data: allData, error: allErr } = await supabase.from('tasks').select('*');
+    const { data: allData, error: allErr } = await db(req).from('tasks').select('*');
     if (allErr) throw allErr;
     const allTasks = (allData || []).map(snakeToCamel);
     const median = calculateMedian(allTasks.map(p => p.importanceScore));
@@ -147,7 +173,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+    const { error } = await db(req).from('tasks').delete().eq('id', req.params.id);
     if (error) throw error;
     res.status(204).send();
   } catch (err) {

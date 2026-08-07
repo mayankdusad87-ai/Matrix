@@ -1,15 +1,41 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// --- Supabase Client (cached for Vercel serverless) ---
-let supabase: SupabaseClient | null = null;
-
-export function getSupabase(): SupabaseClient {
-  if (supabase) return supabase;
+// --- Supabase Client ---
+function getEnv() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY env vars must be set');
-  supabase = createClient(url, key);
-  return supabase;
+  return { url, key };
+}
+
+/** Create a Supabase client authenticated with the user's JWT (enables RLS) */
+export function getAuthenticatedSupabase(token: string): SupabaseClient {
+  const { url, key } = getEnv();
+  return createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+}
+
+/** Fallback anon client (for health checks / unauthenticated endpoints) */
+export function getSupabase(): SupabaseClient {
+  const { url, key } = getEnv();
+  return createClient(url, key);
+}
+
+/** Extract Bearer token from request and return authenticated client, or send 401 */
+export function requireAuth(req: VercelRequest, res: VercelResponse): SupabaseClient | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Authentication required. Please sign in.' });
+    return null;
+  }
+  const token = authHeader.slice(7);
+  if (!token || token.length < 10) {
+    res.status(401).json({ error: 'Invalid authentication token.' });
+    return null;
+  }
+  return getAuthenticatedSupabase(token);
 }
 
 // --- Snake ↔ Camel mapping ---
@@ -158,5 +184,5 @@ export function parseOverrides(query: Record<string, string | string[] | undefin
 export function setCors(res: { setHeader: (key: string, value: string) => void }) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }

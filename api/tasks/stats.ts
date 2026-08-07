@@ -1,12 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabase, snakeToCamel, computeFields, calculateMedian, calculateDaysRemaining, parseOverrides, setCors } from '../_shared';
+import { requireAuth, snakeToCamel, computeFields, calculateMedian, calculateDaysRemaining, parseOverrides, setCors } from '../_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  const supabase = requireAuth(req, res);
+  if (!supabase) return; // 401 already sent
+
   try {
-    const supabase = getSupabase();
     const { medianOverride, urgencyDays } = parseOverrides(req.query as Record<string, string | string[] | undefined>);
 
     const { data, error } = await supabase.from('tasks').select('*');
