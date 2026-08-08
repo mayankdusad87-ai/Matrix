@@ -52,13 +52,6 @@ export default function Analytics({ tasks }: Props) {
     .filter(t => t.isOverdue && t.status !== 'Completed')
     .sort((a, b) => a.daysRemaining - b.daysRemaining);
 
-  const avgImportance: Record<string, number> = {};
-  for (const q of Object.keys(quadrantCounts)) {
-    const qTasks = tasks.filter(t => t.quadrant === q);
-    avgImportance[q] = qTasks.length > 0
-      ? Math.round(qTasks.reduce((sum, t) => sum + t.importanceScore, 0) / qTasks.length) : 0;
-  }
-
   const completed = tasks.filter(t => t.status === 'Completed').length;
   const completionRate = Math.round((completed / total) * 100);
 
@@ -175,21 +168,6 @@ export default function Analytics({ tasks }: Props) {
           </div>
         )}
 
-        {/* Avg importance */}
-        <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-tertiary)' }}>
-            Average Importance by Quadrant
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(QUADRANT_CONFIG).map(([quadrant, cfg]) => (
-              <div key={quadrant} className="rounded-lg p-4 text-center" style={{ background: `${cfg.color}08`, border: `1px solid ${cfg.color}15` }}>
-                <span style={{ color: cfg.color }}>{cfg.icon}</span>
-                <p className="text-3xl font-bold tabular-nums mt-1" style={{ color: cfg.color }}>{avgImportance[quadrant]}</p>
-                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{quadrant}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
