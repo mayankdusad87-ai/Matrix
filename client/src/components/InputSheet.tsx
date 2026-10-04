@@ -29,11 +29,14 @@ function exportCSV(tasks: Task[]) {
   URL.revokeObjectURL(url);
 }
 
+type TabFilter = 'all' | 'overdue' | 'due-soon' | 'in-progress' | 'completed';
+
 export default function InputSheet({ tasks, allTasks, search, onSearchChange, onUpdate, onDelete, onCreate }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRow, setEditRow] = useState<Record<string, string | number>>({});
   const [showAddRow, setShowAddRow] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tabFilter, setTabFilter] = useState<TabFilter>('all');
   const today = new Date().toISOString().split('T')[0];
   const [newRow, setNewRow] = useState({ title: '', startDate: today, dueDate: '', importanceScore: 50 });
 
@@ -63,7 +66,22 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
   const cellClass = 'px-3 py-3 text-sm whitespace-nowrap';
   const thClass = 'px-3 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider';
 
-  const sorted = [...tasks].sort((a, b) => a.daysRemaining - b.daysRemaining);
+  const filtered = tasks.filter(t => {
+    if (tabFilter === 'overdue') return t.isOverdue && t.status !== 'Completed';
+    if (tabFilter === 'due-soon') return t.daysRemaining >= 0 && t.daysRemaining <= 7 && t.status !== 'Completed';
+    if (tabFilter === 'in-progress') return t.status === 'In Progress';
+    if (tabFilter === 'completed') return t.status === 'Completed';
+    return true;
+  });
+  const sorted = [...filtered].sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+  const tabCounts = {
+    all: tasks.length,
+    overdue: tasks.filter(t => t.isOverdue && t.status !== 'Completed').length,
+    'due-soon': tasks.filter(t => t.daysRemaining >= 0 && t.daysRemaining <= 7 && t.status !== 'Completed').length,
+    'in-progress': tasks.filter(t => t.status === 'In Progress').length,
+    completed: tasks.filter(t => t.status === 'Completed').length,
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 md:p-6">
@@ -101,6 +119,43 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
             {showAddRow ? 'Cancel' : '+ Add Task'}
           </button>
         </div>
+      </div>
+
+      {/* Tab filters */}
+      <div className="flex items-center gap-1 mb-3 overflow-x-auto scrollbar-hide">
+        {([
+          { key: 'all' as TabFilter, label: 'All Tasks', color: '' },
+          { key: 'overdue' as TabFilter, label: 'Overdue', color: '#ef4444' },
+          { key: 'due-soon' as TabFilter, label: 'Due Soon', color: '#f59e0b' },
+          { key: 'in-progress' as TabFilter, label: 'In Progress', color: '#3b82f6' },
+          { key: 'completed' as TabFilter, label: 'Completed', color: '#10b981' },
+        ]).map(({ key, label, color }) => (
+          <button
+            key={key}
+            onClick={() => setTabFilter(key)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg whitespace-nowrap transition-all duration-150"
+            style={tabFilter === key ? {
+              background: color ? `${color}12` : 'var(--accent-subtle)',
+              color: color || 'var(--accent)',
+              border: `1px solid ${color ? `${color}30` : 'var(--accent-muted)'}`,
+            } : {
+              color: 'var(--text-tertiary)',
+              border: '1px solid transparent',
+            }}
+          >
+            {label}
+            {tabCounts[key] > 0 && (
+              <span className="text-[10px] font-bold tabular-nums px-1.5 py-px rounded-full"
+                style={tabFilter === key ? {
+                  background: color ? `${color}20` : 'var(--accent-muted)',
+                } : {
+                  background: 'var(--bg-inset)',
+                }}>
+                {tabCounts[key]}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {error && (

@@ -84,7 +84,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="absolute -translate-x-1/2 translate-y-1/2 w-[68px] md:w-[96px] rounded-lg md:rounded-xl
+        className="absolute -translate-x-1/2 translate-y-1/2 w-[80px] md:w-[112px] rounded-lg md:rounded-xl
           px-1.5 md:px-2 py-1 md:py-1.5 cursor-pointer select-none z-10"
         style={{
           willChange: 'left, bottom',
@@ -97,7 +97,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         {/* Badge */}
         <div className="flex items-center gap-0.5 mb-px md:mb-0.5">
           <span
-            className="text-[5px] md:text-[7px] font-bold uppercase tracking-wider px-0.5 md:px-1 py-px rounded-sm leading-none text-white truncate"
+            className="text-[6px] md:text-[8px] font-bold uppercase tracking-wider px-0.5 md:px-1 py-px rounded-sm leading-none text-white truncate"
             style={{ background: colors.accent }}
           >
             {task.isOverdue ? '⚠ LATE' : task.quadrant}
@@ -105,16 +105,16 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         </div>
 
         {/* Title */}
-        <div className="text-[7px] md:text-[9px] font-semibold truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
+        <div className="text-[8px] md:text-[10px] font-semibold truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
           {task.title}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-px md:mt-0.5">
-          <span className="text-[6px] md:text-[7px] font-semibold" style={{ color: urgencyColor }}>
+          <span className="text-[7px] md:text-[8px] font-semibold" style={{ color: urgencyColor }}>
             {task.daysRemaining < 0 ? `${Math.abs(task.daysRemaining)}d late` : task.daysRemaining === 0 ? 'Today' : `${task.daysRemaining}d`}
           </span>
-          <span className="text-[6px] md:text-[7px] font-medium px-0.5 md:px-1 rounded-sm tabular-nums" style={{ color: 'var(--text-secondary)', background: 'var(--bg-inset)' }}>
+          <span className="text-[7px] md:text-[8px] font-medium px-0.5 md:px-1 rounded-sm tabular-nums" style={{ color: 'var(--text-secondary)', background: 'var(--bg-inset)' }}>
             {task.importanceScore}
           </span>
         </div>

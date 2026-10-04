@@ -100,6 +100,38 @@ export default function Analytics({ tasks }: Props) {
           </div>
         </div>
 
+        {/* Status distribution */}
+        <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-tertiary)' }}>
+            Status Distribution
+          </h3>
+          <div className="space-y-3">
+            {[
+              { status: 'Completed', color: '#10b981', count: statusCounts['Completed'] || 0 },
+              { status: 'In Progress', color: '#3b82f6', count: statusCounts['In Progress'] || 0 },
+              { status: 'Not Started', color: '#9ca3af', count: statusCounts['Not Started'] || 0 },
+              { status: 'On Hold', color: '#f59e0b', count: statusCounts['On Hold'] || 0 },
+            ].map(({ status, color, count }) => {
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              return (
+                <div key={status} className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                  <span className="text-sm font-medium w-24 shrink-0" style={{ color: 'var(--text-secondary)' }}>{status}</span>
+                  <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                      style={{ width: `${Math.max(pct, 2)}%`, background: color, opacity: 0.8 }}
+                    >
+                      {pct >= 15 && <span className="text-white text-[10px] font-bold">{pct}%</span>}
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold w-8 text-right tabular-nums" style={{ color: 'var(--text-secondary)' }}>{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Approaching urgency */}
           <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>

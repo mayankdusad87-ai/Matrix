@@ -10,6 +10,7 @@ import InputSheet from './components/InputSheet';
 import Analytics from './components/Analytics';
 import UndoToast from './components/UndoToast';
 import GlobeCanvas from './components/GlobeCanvas';
+import CreateTaskModal from './components/CreateTaskModal';
 import type { Task } from './types';
 
 const tabs = [
@@ -50,6 +51,7 @@ function AppContent() {
     return true;
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -64,6 +66,39 @@ function AppContent() {
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, [showUserMenu]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
+
+      // Cmd/Ctrl+K: focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('header input[type="text"]') as HTMLInputElement;
+        searchInput?.focus();
+        return;
+      }
+
+      if (isInput) return;
+
+      // Esc: close panel or clear search
+      if (e.key === 'Escape') {
+        if (selectedTask) { setSelectedTask(null); return; }
+        if (search) { setSearch(''); return; }
+      }
+
+      // N: open create modal
+      if (e.key === 'n' || e.key === 'N') {
+        setShowCreateModal(true);
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTask, search, setSearch]);
 
   const handleImportanceChange = async (task: Task, newImportance: number) => {
     await updateTask(task.id, { importanceScore: newImportance });
@@ -125,6 +160,24 @@ function AppContent() {
               </button>
             ))}
           </nav>
+
+          {/* Search */}
+          <div className="hidden md:flex items-center relative mr-1">
+            <svg className="absolute left-2.5 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-44 pl-8 pr-8 py-1.5 text-[13px] rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all duration-150"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-inset)', color: 'var(--text-primary)' }}
+            />
+            <span className="absolute right-2 text-[10px] font-medium px-1 py-0.5 rounded" style={{ color: 'var(--text-quaternary)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+              ⌘K
+            </span>
+          </div>
 
           <button
             onClick={() => setDark(!dark)}
@@ -202,7 +255,40 @@ function AppContent() {
       {activeTab === 'matrix' && (
         <div className="w-full" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="max-w-7xl w-full mx-auto">
-            <Dashboard stats={stats} />
+            <Dashboard stats={stats} onFilterClick={(key, value) => {
+              if (key === 'clear') {
+                setFilters({ owner: '', status: '', category: '', quadrant: '' });
+              } else if (key === 'status') {
+                setFilters({ ...filters, status: value });
+              }
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* ── My Focus ── */}
+      {activeTab === 'matrix' && stats && (stats.overdue > 0 || stats.dueThisWeek > 0 || stats.inProgress > 0) && (
+        <div className="w-full px-4 md:px-6 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="max-w-7xl w-full mx-auto flex items-center gap-3 text-[12px] font-medium">
+            <span style={{ color: 'var(--text-tertiary)' }}>Focus:</span>
+            {stats.overdue > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01" />
+                </svg>
+                {stats.overdue} overdue
+              </span>
+            )}
+            {stats.dueThisWeek > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.06)', color: '#f59e0b' }}>
+                {stats.dueThisWeek} due this week
+              </span>
+            )}
+            {stats.inProgress > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(59,130,246,0.06)', color: '#3b82f6' }}>
+                {stats.inProgress} in progress
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -224,7 +310,7 @@ function AppContent() {
         ) : (
           <>
             <div className="max-w-7xl w-full mx-auto" style={{ borderBottom: '1px solid var(--border)' }}>
-              <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setActiveTab('input')} />
+              <Filters filters={filters} setFilters={setFilters} tasks={allTasks} onCreateClick={() => setShowCreateModal(true)} />
             </div>
             <Matrix
               tasks={tasks}
@@ -251,6 +337,13 @@ function AppContent() {
             deleteTask(id);
             setSelectedTask(null);
           }}
+        />
+      )}
+
+      {showCreateModal && (
+        <CreateTaskModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={async (data) => { await createTask(data as unknown as Record<string, unknown>); setShowCreateModal(false); }}
         />
       )}
 

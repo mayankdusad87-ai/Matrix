@@ -28,7 +28,12 @@ const kpis: { key: keyof TaskStats; label: string; icon: JSX.Element; color: str
   },
 ];
 
-export default function Dashboard({ stats }: { stats: TaskStats | null }) {
+interface DashboardProps {
+  stats: TaskStats | null;
+  onFilterClick?: (key: string, value: string) => void;
+}
+
+export default function Dashboard({ stats, onFilterClick }: DashboardProps) {
   if (!stats) return null;
 
   return (
@@ -38,7 +43,17 @@ export default function Dashboard({ stats }: { stats: TaskStats | null }) {
           {i > 0 && (
             <div className="w-px h-8 mx-4 md:mx-5 shrink-0" style={{ background: 'var(--border)' }} />
           )}
-          <div className="flex items-center gap-3 whitespace-nowrap group">
+          <div
+            className="flex items-center gap-3 whitespace-nowrap group cursor-pointer rounded-lg px-2 py-1.5 -mx-2 -my-1.5 transition-colors duration-150"
+            onClick={() => {
+              if (!onFilterClick) return;
+              if (key === 'completed') onFilterClick('status', 'Completed');
+              else if (key === 'inProgress') onFilterClick('status', 'In Progress');
+              else if (key === 'total') onFilterClick('clear', '');
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300"
               style={{ background: `${color}12`, color }}

@@ -48,7 +48,13 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 h-[56px] shrink-0" style={{ borderBottom: '1px solid var(--border)', backdropFilter: 'blur(12px)' }}>
-          <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Task Details</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md text-white"
+              style={{ background: task.quadrant === 'Do Now' ? '#ef4444' : task.quadrant === 'Schedule' ? '#3b82f6' : task.quadrant === 'Delegate' ? '#f59e0b' : '#9ca3af' }}>
+              {task.isOverdue ? 'OVERDUE' : task.quadrant}
+            </span>
+            <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Task Details</h2>
+          </div>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-150"

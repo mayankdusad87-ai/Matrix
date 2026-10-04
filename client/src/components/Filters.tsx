@@ -97,7 +97,7 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" d="M12 5v14m-7-7h14" />
             </svg>
-            New Task
+            <span className="hidden sm:inline">New Task</span>
           </span>
         </button>
       </div>

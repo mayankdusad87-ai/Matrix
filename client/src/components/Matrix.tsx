@@ -466,21 +466,52 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 </span>
               </div>
 
-              {/* Quadrant watermarks */}
-              <div className="absolute inset-0 pointer-events-none select-none z-0">
-                <div className="absolute flex items-center justify-center" style={{ top: 0, right: 0, width: urgW, height: impH }}>
-                  <span className="text-sm md:text-2xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.08)' }}>Do Now</span>
+              {/* Quadrant corner headers */}
+              <div className="absolute inset-0 pointer-events-none select-none z-[1]">
+                {/* Do Now - top right corner */}
+                <div className="absolute top-2.5 md:top-3" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
+                    style={{ color: isDark ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.7)', background: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)' }}>
+                    Do Now
+                  </span>
                 </div>
-                <div className="absolute flex items-center justify-center" style={{ top: 0, left: 0, width: notUrgW, height: impH }}>
-                  <span className="text-base md:text-3xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.08)' }}>Schedule</span>
+                {/* Schedule - top left corner */}
+                <div className="absolute top-2.5 md:top-3 left-2.5 md:left-3">
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
+                    style={{ color: isDark ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.7)', background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.05)' }}>
+                    Schedule
+                  </span>
                 </div>
-                <div className="absolute flex items-center justify-center" style={{ bottom: 0, right: 0, width: urgW, height: impL }}>
-                  <span className="text-xs md:text-xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.08)' }}>Delegate</span>
+                {/* Delegate - bottom right corner */}
+                <div className="absolute bottom-2.5 md:bottom-3" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
+                    style={{ color: isDark ? 'rgba(245,158,11,0.6)' : 'rgba(245,158,11,0.7)', background: isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.05)' }}>
+                    Delegate
+                  </span>
                 </div>
-                <div className="absolute flex items-center justify-center" style={{ bottom: 0, left: 0, width: notUrgW, height: impL }}>
-                  <span className="text-xs md:text-xl font-black tracking-wider uppercase" style={{ color: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(148,163,184,0.1)' }}>Deprioritize</span>
+                {/* Deprioritize - bottom left corner */}
+                <div className="absolute bottom-2.5 md:bottom-3 left-2.5 md:left-3">
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
+                    style={{ color: isDark ? 'rgba(156,163,175,0.5)' : 'rgba(156,163,175,0.6)', background: isDark ? 'rgba(156,163,175,0.04)' : 'rgba(156,163,175,0.05)' }}>
+                    Deprioritize
+                  </span>
                 </div>
               </div>
+
+              {tasks.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center z-[2]">
+                  <div className="text-center px-6">
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center"
+                      style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-muted)' }}>
+                      <svg className="w-7 h-7" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No tasks yet</p>
+                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Add your first task to see it plotted on the matrix</p>
+                  </div>
+                </div>
+              )}
 
               {/* Task cards */}
               {tasks.map(task => {
