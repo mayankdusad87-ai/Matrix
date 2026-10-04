@@ -36,7 +36,7 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
           background: 'rgba(24,24,24,0.95)',
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--border)',
-          boxShadow: '0 0 20px rgba(163,230,53,0.08), var(--shadow-xl)',
+          boxShadow: '0 0 20px rgba(239,68,68,0.08), var(--shadow-xl)',
           color: 'var(--text-primary)',
         }}
       >

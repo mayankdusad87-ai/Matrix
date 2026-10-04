@@ -24,9 +24,9 @@ export default function GlobeCanvas({ size = 120 }: { size?: number }) {
 
       // Glow
       const glow = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 1.4);
-      glow.addColorStop(0, 'rgba(163, 230, 53, 0.15)');
-      glow.addColorStop(0.5, 'rgba(163, 230, 53, 0.05)');
-      glow.addColorStop(1, 'rgba(163, 230, 53, 0)');
+      glow.addColorStop(0, 'rgba(239, 68, 68, 0.15)');
+      glow.addColorStop(0.5, 'rgba(239, 68, 68, 0.05)');
+      glow.addColorStop(1, 'rgba(239, 68, 68, 0)');
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, size, size);
 
@@ -35,15 +35,15 @@ export default function GlobeCanvas({ size = 120 }: { size?: number }) {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
-      grad.addColorStop(0, '#2a3a1a');
-      grad.addColorStop(0.5, '#1a2a10');
-      grad.addColorStop(1, '#0a1408');
+      grad.addColorStop(0, '#3a1a1a');
+      grad.addColorStop(0.5, '#2a1010');
+      grad.addColorStop(1, '#140808');
       ctx.fillStyle = grad;
       ctx.fill();
       ctx.clip();
 
       // Grid lines (longitude)
-      ctx.strokeStyle = 'rgba(163, 230, 53, 0.2)';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
       ctx.lineWidth = size > 60 ? 0.6 : 0.4;
       for (let i = 0; i < 8; i++) {
         const angle = (i / 8) * Math.PI + rotation;
@@ -63,7 +63,7 @@ export default function GlobeCanvas({ size = 120 }: { size?: number }) {
       }
 
       // Continent-like patches (abstract)
-      ctx.fillStyle = 'rgba(163, 230, 53, 0.12)';
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
       const patches = [
         { x: 0.3, y: 0.35, w: 0.25, h: 0.2 },
         { x: 0.55, y: 0.4, w: 0.2, h: 0.25 },
@@ -79,8 +79,8 @@ export default function GlobeCanvas({ size = 120 }: { size?: number }) {
       });
 
       // Bright dots (cities / nodes)
-      ctx.fillStyle = '#a3e635';
-      ctx.shadowColor = '#a3e635';
+      ctx.fillStyle = '#ef4444';
+      ctx.shadowColor = '#ef4444';
       ctx.shadowBlur = size > 60 ? 4 : 2;
       const dots = [
         { a: rotation, lat: 0.3 },
@@ -106,7 +106,7 @@ export default function GlobeCanvas({ size = 120 }: { size?: number }) {
       // Edge ring
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(163, 230, 53, 0.3)';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
       ctx.lineWidth = size > 60 ? 1 : 0.7;
       ctx.stroke();
 

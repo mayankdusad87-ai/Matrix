@@ -137,7 +137,7 @@ export default function CreateTaskModal({ onClose, onCreate }: Props) {
           </button>
           <button type="submit" disabled={saving}
             className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150 disabled:opacity-50"
-            style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(163,230,53,0.15)' }}
+            style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(239,68,68,0.15)' }}
             onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--accent-hover)'; }}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
             {saving ? 'Creating...' : 'Create Task'}

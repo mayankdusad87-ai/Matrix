@@ -156,7 +156,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                   width: TOOLTIP_W,
                   background: isDark ? '#181818' : '#1a1d26',
                   color: isDark ? '#e5e7eb' : '#f3f4f6',
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(163,230,53,0.1)',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(239,68,68,0.1)',
                 }}
               >
                 {/* Arrow */}

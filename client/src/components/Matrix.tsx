@@ -396,7 +396,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute left-0 right-0 -top-4 h-8 md:-top-5 md:h-10" />
                 {/* Visible line */}
                 <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.30)' : 'rgba(163,230,53,0.35)' }} />
+                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.30)' : 'rgba(220,38,38,0.35)' }} />
               </div>
 
               {/* Median drag handle label */}
@@ -410,8 +410,8 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                   style={{
                     color: medianActive ? '#0a0a0a' : 'var(--accent)',
                     background: medianActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.3)' : 'rgba(101,163,13,0.35)'}`,
-                    boxShadow: medianActive ? '0 0 12px rgba(163,230,53,0.3)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.3)' : 'rgba(220,38,38,0.35)'}`,
+                    boxShadow: medianActive ? '0 0 12px rgba(239,68,68,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -441,7 +441,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute top-0 bottom-0 -left-4 w-8 md:-left-5 md:w-10" />
                 {/* Visible line */}
                 <div className="absolute top-0 bottom-0 left-0 border-l-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.30)' : 'rgba(163,230,53,0.35)' }} />
+                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.30)' : 'rgba(220,38,38,0.35)' }} />
               </div>
 
               {/* Urgency drag handle label */}
@@ -455,8 +455,8 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                   style={{
                     color: urgencyActive ? '#0a0a0a' : 'var(--accent)',
                     background: urgencyActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(163,230,53,0.3)' : 'rgba(101,163,13,0.35)'}`,
-                    boxShadow: urgencyActive ? '0 0 12px rgba(163,230,53,0.3)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.3)' : 'rgba(220,38,38,0.35)'}`,
+                    boxShadow: urgencyActive ? '0 0 12px rgba(239,68,68,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
