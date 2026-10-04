@@ -89,7 +89,7 @@ export default function Filters({ filters, setFilters, tasks, onCreateClick }: P
         <button
           onClick={onCreateClick}
           className="rounded-lg text-[13px] font-semibold px-4 py-[9px] transition-all duration-150 hover:shadow-md active:scale-[0.97]"
-          style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 16px rgba(239,68,68,0.2)' }}
+          style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: 'var(--shadow-sm)' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >

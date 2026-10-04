@@ -175,7 +175,7 @@ function SettingsDropdown({
                   onClick={() => { onChange({ medianOverride: null, urgencyDays: 7 }); setOpen(false); }}
                   className="text-[12px] font-medium transition-colors duration-150"
                   style={{ color: 'var(--text-tertiary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
                 >
                   Reset to defaults
@@ -316,7 +316,6 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
     };
   }, [draggingUrgency, handleUrgencyDrag]);
 
-  const isDark = document.documentElement.classList.contains('dark');
   const medianActive = draggingMedian || hoveringMedian;
   const urgencyActive = draggingUrgency || hoveringUrgency;
 
@@ -327,7 +326,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
         <div className="flex items-center gap-3 md:gap-5 text-[10px] md:text-[11px] font-medium flex-wrap flex-1 min-w-0">
           {Q.map(q => (
             <span key={q.key} className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0" style={{ background: isDark ? q.darkColor : q.color }} />
+              <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-sm inline-block shrink-0" style={{ background: q.color }} />
               <span style={{ color: 'var(--text-secondary)' }}>{q.key}</span>
               <span className="font-bold tabular-nums" style={{ color: 'var(--text-quaternary)' }}>{quadrantCounts[q.key]}</span>
             </span>
@@ -368,13 +367,13 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
             <div
               ref={containerRef}
               className="relative flex-1 rounded-xl md:rounded-2xl overflow-hidden"
-              style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03), var(--shadow-sm)' }}
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
             >
               {/* Quadrant fills */}
-              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: 'linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.07) 100%)' }} />
-              <div className="absolute top-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impH, background: 'linear-gradient(135deg, rgba(59,130,246,0.02) 0%, rgba(59,130,246,0.05) 100%)' }} />
-              <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: urgW, height: impL, background: 'linear-gradient(135deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.05) 100%)' }} />
-              <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impL, background: 'linear-gradient(135deg, rgba(148,163,184,0.01) 0%, rgba(148,163,184,0.03) 100%)' }} />
+              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: urgW, height: impH, background: 'linear-gradient(135deg, rgba(239,68,68,0.02) 0%, rgba(239,68,68,0.04) 100%)' }} />
+              <div className="absolute top-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impH, background: 'linear-gradient(135deg, rgba(59,130,246,0.01) 0%, rgba(59,130,246,0.03) 100%)' }} />
+              <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: urgW, height: impL, background: 'linear-gradient(135deg, rgba(245,158,11,0.01) 0%, rgba(245,158,11,0.03) 100%)' }} />
+              <div className="absolute bottom-0 left-0 pointer-events-none" style={{ width: notUrgW, height: impL, background: 'linear-gradient(135deg, rgba(148,163,184,0.01) 0%, rgba(148,163,184,0.02) 100%)' }} />
 
               {/* Horizontal grid lines */}
               {yLabels.map(v => (
@@ -396,7 +395,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute left-0 right-0 -top-4 h-8 md:-top-5 md:h-10" />
                 {/* Visible line */}
                 <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: medianActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.30)' : 'rgba(220,38,38,0.35)' }} />
+                  style={{ borderColor: medianActive ? 'var(--accent)' : 'rgba(139,26,26,0.30)' }} />
               </div>
 
               {/* Median drag handle label */}
@@ -408,10 +407,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               >
                 <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md -translate-y-1/2 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: medianActive ? '#0a0a0a' : 'var(--accent)',
+                    color: medianActive ? '#ffffff' : 'var(--accent)',
                     background: medianActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${medianActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.3)' : 'rgba(220,38,38,0.35)'}`,
-                    boxShadow: medianActive ? '0 0 12px rgba(239,68,68,0.3)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${medianActive ? 'var(--accent)' : 'rgba(139,26,26,0.30)'}`,
+                    boxShadow: medianActive ? '0 0 12px rgba(139,26,26,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -441,7 +440,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 <div className="absolute top-0 bottom-0 -left-4 w-8 md:-left-5 md:w-10" />
                 {/* Visible line */}
                 <div className="absolute top-0 bottom-0 left-0 border-l-2 border-dashed transition-colors duration-150"
-                  style={{ borderColor: urgencyActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.30)' : 'rgba(220,38,38,0.35)' }} />
+                  style={{ borderColor: urgencyActive ? 'var(--accent)' : 'rgba(139,26,26,0.30)' }} />
               </div>
 
               {/* Urgency drag handle label */}
@@ -453,10 +452,10 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
               >
                 <span className="text-[9px] md:text-[11px] font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md translate-x-1 inline-flex items-center gap-1 transition-all duration-150"
                   style={{
-                    color: urgencyActive ? '#0a0a0a' : 'var(--accent)',
+                    color: urgencyActive ? '#ffffff' : 'var(--accent)',
                     background: urgencyActive ? 'var(--accent)' : 'var(--bg-surface)',
-                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : isDark ? 'rgba(239,68,68,0.3)' : 'rgba(220,38,38,0.35)'}`,
-                    boxShadow: urgencyActive ? '0 0 12px rgba(239,68,68,0.3)' : 'var(--shadow-sm)',
+                    border: `1.5px solid ${urgencyActive ? 'var(--accent)' : 'rgba(139,26,26,0.30)'}`,
+                    boxShadow: urgencyActive ? '0 0 12px rgba(139,26,26,0.3)' : 'var(--shadow-sm)',
                   }}
                 >
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -468,47 +467,65 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
 
               {/* Quadrant corner headers */}
               <div className="absolute inset-0 pointer-events-none select-none z-[1]">
-                {/* Do Now - top right corner */}
-                <div className="absolute top-2.5 md:top-3" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
-                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
-                    style={{ color: isDark ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.7)', background: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)' }}>
+                {/* Do Now - top right */}
+                <div className="absolute top-3 md:top-4" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                    style={{ color: 'rgba(239,68,68,0.7)', background: 'rgba(239,68,68,0.04)' }}>
                     Do Now
                   </span>
+                  <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
+                    Important · Urgent
+                  </span>
                 </div>
-                {/* Schedule - top left corner */}
-                <div className="absolute top-2.5 md:top-3 left-2.5 md:left-3">
-                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
-                    style={{ color: isDark ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.7)', background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.05)' }}>
+                {/* Schedule - top left */}
+                <div className="absolute top-3 md:top-4 left-3 md:left-4">
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                    style={{ color: 'rgba(59,130,246,0.7)', background: 'rgba(59,130,246,0.04)' }}>
                     Schedule
                   </span>
-                </div>
-                {/* Delegate - bottom right corner */}
-                <div className="absolute bottom-2.5 md:bottom-3" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
-                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
-                    style={{ color: isDark ? 'rgba(245,158,11,0.6)' : 'rgba(245,158,11,0.7)', background: isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.05)' }}>
-                    Delegate
+                  <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
+                    Important · Not urgent
                   </span>
                 </div>
-                {/* Deprioritize - bottom left corner */}
-                <div className="absolute bottom-2.5 md:bottom-3 left-2.5 md:left-3">
-                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded-md"
-                    style={{ color: isDark ? 'rgba(156,163,175,0.5)' : 'rgba(156,163,175,0.6)', background: isDark ? 'rgba(156,163,175,0.04)' : 'rgba(156,163,175,0.05)' }}>
+                {/* Delegate - bottom right */}
+                <div className="absolute bottom-3 md:bottom-4" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                    style={{ color: 'rgba(245,158,11,0.7)', background: 'rgba(245,158,11,0.04)' }}>
+                    Delegate
+                  </span>
+                  <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
+                    Low importance · Urgent
+                  </span>
+                </div>
+                {/* Deprioritize - bottom left */}
+                <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4">
+                  <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                    style={{ color: 'rgba(156,163,175,0.6)', background: 'rgba(156,163,175,0.03)' }}>
                     Deprioritize
+                  </span>
+                  <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
+                    Low importance · Later
                   </span>
                 </div>
               </div>
 
               {tasks.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center z-[2]">
-                  <div className="text-center px-6">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center"
+                  <div className="text-center px-6 max-w-sm">
+                    <div className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center"
                       style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-muted)' }}>
-                      <svg className="w-7 h-7" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      <svg className="w-8 h-8" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+                        <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
                       </svg>
                     </div>
-                    <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No tasks yet</p>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Add your first task to see it plotted on the matrix</p>
+                    <p className="text-base font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>Your matrix is ready</p>
+                    <p className="text-[13px] leading-relaxed mb-5" style={{ color: 'var(--text-tertiary)' }}>
+                      Add your first task and Priorix will place it automatically based on urgency and importance.
+                    </p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-quaternary)' }}>
+                      Drag tasks to reprioritise
+                    </p>
                   </div>
                 </div>
               )}

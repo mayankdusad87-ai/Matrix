@@ -84,10 +84,18 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 md:p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Task Manager</h2>
+    <div className="flex-1 flex flex-col min-h-0">
+      {/* Page header */}
+      <div className="px-5 md:px-8 pt-5 pb-3">
+        <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Tasks</h1>
+        <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+          Stay on top of everything that needs to get done.
+        </p>
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 px-4 md:px-6">
+        <div />
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -114,7 +122,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
           </button>
           <button onClick={() => { setShowAddRow(!showAddRow); setError(null); }}
             className="rounded-lg text-sm font-semibold px-5 py-2 transition-all duration-150 shrink-0"
-            style={{ background: showAddRow ? 'var(--text-tertiary)' : 'var(--accent)', color: '#0a0a0a', boxShadow: showAddRow ? 'none' : '0 0 12px rgba(239,68,68,0.15)' }}
+            style={{ background: showAddRow ? 'var(--text-tertiary)' : 'var(--accent)', color: '#ffffff', boxShadow: showAddRow ? 'none' : 'var(--shadow-sm)' }}
           >
             {showAddRow ? 'Cancel' : '+ Add Task'}
           </button>
@@ -122,7 +130,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
       </div>
 
       {/* Tab filters */}
-      <div className="flex items-center gap-1 mb-3 overflow-x-auto scrollbar-hide">
+      <div className="flex items-center gap-1 mb-3 overflow-x-auto scrollbar-hide px-4 md:px-6">
         {([
           { key: 'all' as TabFilter, label: 'All Tasks', color: '' },
           { key: 'overdue' as TabFilter, label: 'Overdue', color: '#ef4444' },
@@ -159,13 +167,34 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
       </div>
 
       {error && (
-        <div className="mb-3 px-4 py-2.5 rounded-lg text-sm font-medium" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.15)' }}>
+        <div className="mb-3 mx-4 md:mx-6 px-4 py-2.5 rounded-lg text-sm font-medium" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.15)' }}>
           {error}
         </div>
       )}
 
+      {sorted.length === 0 && !showAddRow ? (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center max-w-sm">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center"
+              style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-muted)' }}>
+              <svg className="w-8 h-8" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                <rect x="9" y="3" width="6" height="4" rx="1" /><path strokeLinecap="round" d="M9 14l2 2 4-4" />
+              </svg>
+            </div>
+            <p className="text-base font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>No tasks yet</p>
+            <p className="text-[13px] leading-relaxed mb-5" style={{ color: 'var(--text-tertiary)' }}>
+              Create your first task to get started. Priorix will prioritise it automatically.
+            </p>
+            <p className="text-[11px]" style={{ color: 'var(--text-quaternary)' }}>
+              Create tasks {'→'} Priorix prioritises {'→'} Execute what matters
+            </p>
+          </div>
+        </div>
+      ) : (
+      <>
       {/* Mobile card view */}
-      <div className="block md:hidden flex-1 overflow-auto space-y-3 scrollbar-thin">
+      <div className="block md:hidden flex-1 overflow-auto space-y-3 scrollbar-thin px-4 md:px-6">
         {showAddRow && (
           <div className="p-4 rounded-xl space-y-3" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent)' }}>
             <input className={inputClass} style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
@@ -187,7 +216,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
               <input type="number" min={0} max={100} className={`${inputClass} w-16`} style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}
                 value={newRow.importanceScore} onChange={e => setNewRow({ ...newRow, importanceScore: Number(e.target.value) })} />
               <div className="flex-1" />
-              <button onClick={handleAdd} className="text-xs font-medium rounded-lg px-4 py-1.5" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button>
+              <button onClick={handleAdd} className="text-xs font-medium rounded-lg px-4 py-1.5" style={{ background: 'var(--accent)', color: '#ffffff' }}>Save</button>
             </div>
           </div>
         )}
@@ -197,7 +226,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
       </div>
 
       {/* Desktop table */}
-      <div className="hidden md:flex flex-1 overflow-auto rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+      <div className="hidden md:flex flex-1 overflow-auto rounded-xl mx-4 md:mx-6 mb-4" style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
         <table className="w-full">
           <thead className="sticky top-0 z-10" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
             <tr>
@@ -226,7 +255,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
                 <td className={cellClass} style={{ color: 'var(--text-tertiary)' }}>—</td>
-                <td className={cellClass}><button onClick={handleAdd} className="text-xs font-medium rounded-md px-3 py-1" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button></td>
+                <td className={cellClass}><button onClick={handleAdd} className="text-xs font-medium rounded-md px-3 py-1" style={{ background: 'var(--accent)', color: '#ffffff' }}>Save</button></td>
               </tr>
             )}
 
@@ -252,7 +281,7 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
                     <td className={cellClass}><TimelineBadge task={task} /></td>
                     <td className={cellClass}><QuadrantBadge quadrant={task.quadrant} isOverdue={task.isOverdue} /></td>
                     <td className={cellClass}>
-                      <button onClick={() => saveEdit(task.id)} className="text-xs font-medium rounded-md px-2.5 py-1 mr-1" style={{ background: 'var(--accent)', color: '#0a0a0a' }}>Save</button>
+                      <button onClick={() => saveEdit(task.id)} className="text-xs font-medium rounded-md px-2.5 py-1 mr-1" style={{ background: 'var(--accent)', color: '#ffffff' }}>Save</button>
                       <button onClick={() => setEditingId(null)} className="text-xs font-medium rounded-md px-2.5 py-1" style={{ color: 'var(--text-tertiary)' }}>Cancel</button>
                     </td>
                   </>
@@ -286,6 +315,8 @@ export default function InputSheet({ tasks, allTasks, search, onSearchChange, on
           </tbody>
         </table>
       </div>
+      </>
+      )}
     </div>
   );
 }

@@ -23,12 +23,37 @@ export default function Analytics({ tasks }: Props) {
   const total = tasks.length;
   if (total === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center">
-          <svg className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-quaternary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>Add tasks to see analytics</p>
+      <div className="flex-1 overflow-auto p-5 md:p-8 scrollbar-thin">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Analytics</h1>
+            <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              Understand where your time and attention are going.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {[
+              { title: 'Completion', subtitle: 'Completion trend over time' },
+              { title: 'Priority Mix', subtitle: 'Distribution across quadrants' },
+              { title: 'Execution', subtitle: 'Tasks completed this period' },
+            ].map(card => (
+              <div key={card.title} className="rounded-xl p-6 text-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center" style={{ background: 'var(--bg-inset)' }}>
+                  <svg className="w-6 h-6" style={{ color: 'var(--text-quaternary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    {card.title === 'Completion' && <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
+                    {card.title === 'Priority Mix' && <><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></>}
+                    {card.title === 'Execution' && <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />}
+                  </svg>
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>{card.title}</p>
+                <p className="text-3xl font-bold mb-1" style={{ color: 'var(--text-quaternary)' }}>{'—'}</p>
+                <p className="text-[11px]" style={{ color: 'var(--text-quaternary)' }}>{card.subtitle}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center py-8">
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Add tasks to see your analytics come to life.</p>
+          </div>
         </div>
       </div>
     );
@@ -62,7 +87,12 @@ export default function Analytics({ tasks }: Props) {
   return (
     <div className="flex-1 overflow-auto p-5 md:p-8 scrollbar-thin">
       <div className="max-w-5xl mx-auto space-y-6">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Analytics</h2>
+        <div>
+          <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Analytics</h1>
+          <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            Understand where your time and attention are going.
+          </p>
+        </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

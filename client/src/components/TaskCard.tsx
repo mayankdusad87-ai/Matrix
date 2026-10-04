@@ -84,13 +84,14 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="absolute -translate-x-1/2 translate-y-1/2 w-[80px] md:w-[112px] rounded-lg md:rounded-xl
+        className="absolute -translate-x-1/2 translate-y-1/2 w-[80px] md:w-[120px] rounded-lg md:rounded-xl
           px-1.5 md:px-2 py-1 md:py-1.5 cursor-pointer select-none z-10"
         style={{
           willChange: 'left, bottom',
           background: isDark ? colors.darkBg : colors.bg,
           border: `1px solid ${isDark ? colors.darkBorder : colors.border}`,
           backdropFilter: 'blur(8px)',
+          boxShadow: 'var(--shadow-sm)',
         }}
         whileHover={{ scale: 1.15, zIndex: 50 }}
       >
@@ -156,7 +157,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                   width: TOOLTIP_W,
                   background: isDark ? '#181818' : '#1a1d26',
                   color: isDark ? '#e5e7eb' : '#f3f4f6',
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(239,68,68,0.1)',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(139,26,26,0.1)',
                 }}
               >
                 {/* Arrow */}

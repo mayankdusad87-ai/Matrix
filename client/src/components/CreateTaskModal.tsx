@@ -37,7 +37,7 @@ export default function CreateTaskModal({ onClose, onCreate }: Props) {
   const inputClass = 'w-full rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-colors duration-150';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
       <form
         onClick={e => e.stopPropagation()}
         onSubmit={handleSubmit}
@@ -137,7 +137,7 @@ export default function CreateTaskModal({ onClose, onCreate }: Props) {
           </button>
           <button type="submit" disabled={saving}
             className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150 disabled:opacity-50"
-            style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(239,68,68,0.15)' }}
+            style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: 'var(--shadow-sm)' }}
             onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--accent-hover)'; }}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
             {saving ? 'Creating...' : 'Create Task'}

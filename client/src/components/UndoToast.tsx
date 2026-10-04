@@ -36,7 +36,7 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
           background: 'rgba(24,24,24,0.95)',
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--border)',
-          boxShadow: '0 0 20px rgba(239,68,68,0.08), var(--shadow-xl)',
+          boxShadow: '0 0 20px rgba(139,26,26,0.08), var(--shadow-xl)',
           color: 'var(--text-primary)',
         }}
       >
@@ -57,7 +57,7 @@ export default function UndoToast({ task, onUndo, onDismiss }: Props) {
         <button
           onClick={onUndo}
           className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-150"
-          style={{ background: 'var(--accent)', color: '#0a0a0a' }}
+          style={{ background: 'var(--accent)', color: '#ffffff' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
         >

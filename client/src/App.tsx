@@ -9,7 +9,6 @@ import TaskPanel from './components/TaskPanel';
 import InputSheet from './components/InputSheet';
 import Analytics from './components/Analytics';
 import UndoToast from './components/UndoToast';
-import GlobeCanvas from './components/GlobeCanvas';
 import CreateTaskModal from './components/CreateTaskModal';
 import type { Task } from './types';
 
@@ -46,9 +45,9 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'input' | 'matrix' | 'analytics'>('matrix');
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') !== 'light';
+      return localStorage.getItem('theme') === 'dark';
     }
-    return true;
+    return false;
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -123,31 +122,33 @@ function AppContent() {
     <div className="h-screen flex flex-col" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       {/* ── Header ── */}
       <header
-        className="flex items-center justify-between px-4 md:px-5 h-[56px] shrink-0 z-20"
-        style={{ background: 'rgba(17,17,17,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}
+        className="flex items-center justify-between px-4 md:px-5 h-[64px] shrink-0 z-20"
+        style={{ background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 flex items-center justify-center shrink-0" style={{ marginLeft: -4 }}>
-            <GlobeCanvas size={32} />
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent-subtle)' }}>
+            <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" strokeWidth={2}>
+              <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+              <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+            </svg>
           </div>
-          <span className="text-[15px] font-semibold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
+          <span className="text-[15px] font-bold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
             Priorix
           </span>
         </div>
 
         {/* Navigation + theme + user */}
         <div className="flex items-center gap-1">
-          <nav className="flex items-center rounded-lg p-0.5 mr-1" style={{ background: 'var(--bg-inset)' }}>
+          <nav className="flex items-center gap-0.5 mr-1">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className="relative flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md transition-all duration-200"
                 style={activeTab === tab.key ? {
-                  background: 'var(--bg-surface)',
-                  color: 'var(--text-primary)',
-                  boxShadow: 'var(--shadow-sm)',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--accent)',
                 } : {
                   color: 'var(--text-tertiary)',
                 }}
@@ -174,9 +175,7 @@ function AppContent() {
               className="w-44 pl-8 pr-8 py-1.5 text-[13px] rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all duration-150"
               style={{ border: '1px solid var(--border)', background: 'var(--bg-inset)', color: 'var(--text-primary)' }}
             />
-            <span className="absolute right-2 text-[10px] font-medium px-1 py-0.5 rounded" style={{ color: 'var(--text-quaternary)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              ⌘K
-            </span>
+            <kbd className="absolute right-2">⌘K</kbd>
           </div>
 
           <button
@@ -220,8 +219,7 @@ function AppContent() {
               <div
                 className="absolute right-0 top-full mt-1 w-56 rounded-xl py-1.5 z-50"
                 style={{
-                  background: 'rgba(24,24,24,0.95)',
-                  backdropFilter: 'blur(12px)',
+                  background: 'var(--bg-surface)',
                   border: '1px solid var(--border)',
                   boxShadow: 'var(--shadow-xl)',
                 }}
@@ -254,6 +252,14 @@ function AppContent() {
       {/* ── KPIs ── */}
       {activeTab === 'matrix' && (
         <div className="w-full" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="max-w-7xl w-full mx-auto px-5 md:px-6 pt-5 pb-3">
+            <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>
+              {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'}
+            </h1>
+            <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              Here's what deserves your attention today.
+            </p>
+          </div>
           <div className="max-w-7xl w-full mx-auto">
             <Dashboard stats={stats} onFilterClick={(key, value) => {
               if (key === 'clear') {
@@ -272,7 +278,7 @@ function AppContent() {
           <div className="max-w-7xl w-full mx-auto flex items-center gap-3 text-[12px] font-medium">
             <span style={{ color: 'var(--text-tertiary)' }}>Focus:</span>
             {stats.overdue > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}>
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-danger-subtle)', color: 'var(--color-danger)' }}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01" />
                 </svg>
@@ -280,12 +286,12 @@ function AppContent() {
               </span>
             )}
             {stats.dueThisWeek > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.06)', color: '#f59e0b' }}>
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-warning-subtle)', color: 'var(--color-warning)' }}>
                 {stats.dueThisWeek} due this week
               </span>
             )}
             {stats.inProgress > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(59,130,246,0.06)', color: '#3b82f6' }}>
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-info-subtle)', color: 'var(--color-info)' }}>
                 {stats.inProgress} in progress
               </span>
             )}
@@ -363,7 +369,7 @@ export default function App() {
   const { user, loading } = useAuth();
   // Apply persisted theme even on auth page
   useEffect(() => {
-    const isDark = localStorage.getItem('theme') !== 'light';
+    const isDark = localStorage.getItem('theme') === 'dark';
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.classList.toggle('light', !isDark);
   }, []);

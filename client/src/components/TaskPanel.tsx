@@ -216,7 +216,7 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
               </button>
               <button onClick={handleSave}
                 className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
-                style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(239,68,68,0.15)' }}
+                style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: '0 0 12px rgba(139,26,26,0.15)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
                 Save Changes
@@ -240,7 +240,7 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
               </button>
               <button onClick={handleSave}
                 className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
-                style={{ background: 'var(--accent)', color: '#0a0a0a', boxShadow: '0 0 12px rgba(239,68,68,0.15)' }}
+                style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: '0 0 12px rgba(139,26,26,0.15)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
                 Save
