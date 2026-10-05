@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
+import { useMediaQuery } from './hooks/useMediaQuery';
 import AuthPage from './components/AuthPage';
-import Dashboard from './components/Dashboard';
 import Filters from './components/Filters';
 import Matrix from './components/Matrix';
 import TaskPanel from './components/TaskPanel';
@@ -10,6 +10,7 @@ import InputSheet from './components/InputSheet';
 import Analytics from './components/Analytics';
 import UndoToast from './components/UndoToast';
 import CreateTaskModal from './components/CreateTaskModal';
+import MobileAppShell from './components/mobile/MobileAppShell';
 import type { Task } from './types';
 
 const tabs = [
@@ -41,6 +42,7 @@ function AppContent() {
     deletedTask, undoDelete, dismissUndo,
     matrixSettings, setMatrixSettings,
   } = useTasks();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<'input' | 'matrix' | 'analytics'>('matrix');
   const [dark, setDark] = useState(() => {
@@ -115,6 +117,32 @@ function AppContent() {
           <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>Loading workspace…</span>
         </div>
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <MobileAppShell
+        tasks={tasks}
+        allTasks={allTasks}
+        stats={stats}
+        filters={filters}
+        setFilters={setFilters}
+        search={search}
+        setSearch={setSearch}
+        createTask={createTask}
+        updateTask={updateTask}
+        deleteTask={deleteTask}
+        deletedTask={deletedTask}
+        undoDelete={undoDelete}
+        dismissUndo={dismissUndo}
+        matrixSettings={matrixSettings}
+        setMatrixSettings={setMatrixSettings}
+        user={user}
+        signOut={signOut}
+        dark={dark}
+        setDark={setDark}
+      />
     );
   }
 
@@ -249,51 +277,43 @@ function AppContent() {
         </div>
       </header>
 
-      {/* ── KPIs ── */}
+      {/* ── Compact info strip ── */}
       {activeTab === 'matrix' && (
-        <div className="w-full" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="max-w-7xl w-full mx-auto px-5 md:px-6 pt-5 pb-3">
-            <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>
+        <div className="w-full px-4 md:px-6" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-4 py-2.5">
+            <span className="text-[15px] font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
               {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'}
-            </h1>
-            <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-              Here's what deserves your attention today.
-            </p>
-          </div>
-          <div className="max-w-7xl w-full mx-auto">
-            <Dashboard stats={stats} onFilterClick={(key, value) => {
-              if (key === 'clear') {
-                setFilters({ owner: '', status: '', category: '', quadrant: '' });
-              } else if (key === 'status') {
-                setFilters({ ...filters, status: value });
-              }
-            }} />
-          </div>
-        </div>
-      )}
-
-      {/* ── My Focus ── */}
-      {activeTab === 'matrix' && stats && (stats.overdue > 0 || stats.dueThisWeek > 0 || stats.inProgress > 0) && (
-        <div className="w-full px-4 md:px-6 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="max-w-7xl w-full mx-auto flex items-center gap-3 text-[12px] font-medium">
-            <span style={{ color: 'var(--text-tertiary)' }}>Focus:</span>
-            {stats.overdue > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-danger-subtle)', color: 'var(--color-danger)' }}>
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01" />
-                </svg>
-                {stats.overdue} overdue
-              </span>
-            )}
-            {stats.dueThisWeek > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-warning-subtle)', color: 'var(--color-warning)' }}>
-                {stats.dueThisWeek} due this week
-              </span>
-            )}
-            {stats.inProgress > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'var(--color-info-subtle)', color: 'var(--color-info)' }}>
-                {stats.inProgress} in progress
-              </span>
+            </span>
+            {stats && (
+              <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide text-[12px] font-medium">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="font-bold tabular-nums text-[15px]">{stats.total}</span> tasks
+                </span>
+                <span className="w-px h-4 shrink-0" style={{ background: 'var(--border)' }} />
+                <span className="flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap" style={{ color: '#22c55e' }}>
+                  <span className="font-bold tabular-nums text-[15px]">{stats.completed}</span> done
+                </span>
+                <span className="w-px h-4 shrink-0" style={{ background: 'var(--border)' }} />
+                <span className="flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap" style={{ color: '#3b82f6' }}>
+                  <span className="font-bold tabular-nums text-[15px]">{stats.inProgress}</span> active
+                </span>
+                {stats.overdue > 0 && (
+                  <>
+                    <span className="w-px h-4 shrink-0" style={{ background: 'var(--border)' }} />
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'var(--color-danger-subtle)', color: 'var(--color-danger)' }}>
+                      {stats.overdue} overdue
+                    </span>
+                  </>
+                )}
+                {stats.dueThisWeek > 0 && (
+                  <>
+                    <span className="w-px h-4 shrink-0" style={{ background: 'var(--border)' }} />
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: 'var(--color-warning-subtle)', color: 'var(--color-warning)' }}>
+                      {stats.dueThisWeek} due soon
+                    </span>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
