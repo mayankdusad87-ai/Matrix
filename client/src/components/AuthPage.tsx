@@ -144,16 +144,16 @@ export default function AuthPage() {
   const features = [
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
           <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
         </svg>
       ),
-      label: 'Visual Prioritisation',
+      label: 'Visual\nPrioritisation',
     },
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
@@ -161,7 +161,7 @@ export default function AuthPage() {
     },
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ),
@@ -171,21 +171,27 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* ── Background layers ── */}
+      {/* ── Background: photo + warm overlays ── */}
       <div className="absolute inset-0" style={{
-        background: 'linear-gradient(135deg, #1a0505 0%, #2d0808 25%, #4a1515 50%, #3d1010 75%, #1a0505 100%)',
+        backgroundImage: 'url(/bg-login.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }} />
+      {/* Warm red/amber color overlay */}
+      <div className="absolute inset-0" style={{
+        background: 'linear-gradient(135deg, rgba(80,20,10,0.7) 0%, rgba(120,30,15,0.5) 40%, rgba(160,50,20,0.4) 60%, rgba(100,25,10,0.6) 100%)',
+      }} />
+      {/* Red curtain effect on the right */}
       <div className="absolute inset-0" style={{
         background: `
-          radial-gradient(ellipse at 25% 60%, rgba(180,50,30,0.25) 0%, transparent 55%),
-          radial-gradient(ellipse at 75% 40%, rgba(160,40,25,0.15) 0%, transparent 50%),
-          radial-gradient(ellipse at 50% 90%, rgba(120,30,20,0.2) 0%, transparent 40%),
-          radial-gradient(ellipse at 80% 80%, rgba(200,100,60,0.08) 0%, transparent 35%)
+          linear-gradient(to right, transparent 55%, rgba(140,20,10,0.45) 75%, rgba(120,15,8,0.6) 100%),
+          radial-gradient(ellipse at 20% 80%, rgba(200,120,60,0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, rgba(180,40,20,0.1) 0%, transparent 40%)
         `,
       }} />
       {/* Subtle vignette */}
       <div className="absolute inset-0" style={{
-        background: 'radial-gradient(ellipse at center, transparent 40%, rgba(10,2,2,0.5) 100%)',
+        background: 'radial-gradient(ellipse at center, transparent 30%, rgba(10,2,2,0.35) 100%)',
       }} />
 
       {/* ── Content ── */}
@@ -195,41 +201,41 @@ export default function AuthPage() {
         <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-10 xl:p-14">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(220,40,40,0.2)', backdropFilter: 'blur(8px)' }}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#ef4444" strokeWidth={2}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(220,40,40,0.2)', backdropFilter: 'blur(8px)' }}>
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#ef4444" strokeWidth={2}>
                 <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
                 <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
               </svg>
             </div>
-            <span className="text-lg font-bold tracking-[-0.02em] text-white">Priorix</span>
+            <span className="text-xl font-bold tracking-[-0.02em] text-white">Priorix</span>
           </div>
 
           {/* Hero */}
           <div className="max-w-lg">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-5" style={{ color: 'rgba(239,100,80,0.8)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(255,200,160,0.7)' }}>
               Good to see you again
             </p>
-            <h1 className="text-4xl xl:text-[52px] font-bold leading-[1.08] mb-4 text-white">
+            <h1 className="text-[44px] xl:text-[56px] font-bold leading-[1.05] mb-4 text-white">
               Turn effort<br />
               into <span style={{ color: '#ef4444' }}>impact.</span>
             </h1>
-            <p className="text-[15px] font-medium" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-[16px] font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
               Prioritise. Execute. Deliver.
             </p>
           </div>
 
-          {/* Feature cards */}
-          <div className="flex items-stretch gap-4">
+          {/* Feature cards — light frosted glass */}
+          <div className="flex items-stretch gap-5">
             {features.map((f, i) => (
-              <div key={i} className="flex flex-col items-center gap-2.5 px-6 py-4 rounded-xl" style={{
-                background: 'rgba(0,0,0,0.35)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.06)',
+              <div key={i} className="flex flex-col items-center gap-3 px-7 py-5 rounded-2xl" style={{
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.15)',
               }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)', color: '#ef4444' }}>
                   {f.icon}
                 </div>
-                <span className="text-[11px] font-medium text-center whitespace-pre-line leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <span className="text-[12px] font-medium text-center whitespace-pre-line leading-snug" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   {f.label}
                 </span>
               </div>
@@ -256,7 +262,7 @@ export default function AuthPage() {
 
             {/* Heading */}
             <div className="mb-7">
-              <h2 className="text-2xl font-bold mb-1" style={{ color: '#111827' }}>
+              <h2 className="text-[26px] font-bold mb-1" style={{ color: '#111827' }}>
                 {headings[mode].title}
               </h2>
               <p className="text-[14px]" style={{ color: '#6b7280' }}>
@@ -294,35 +300,47 @@ export default function AuthPage() {
               {/* Email */}
               {mode !== 'reset' && (
                 <div className="mb-4">
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: '#374151' }}>
+                  <label className="block text-[13px] font-semibold mb-1.5" style={{ color: '#374151' }}>
                     Email
                   </label>
-                  <input
-                    type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    placeholder="you@company.com" autoComplete="email"
-                    className="w-full h-[44px] px-3.5 rounded-lg text-[14px] outline-none transition-all duration-200"
-                    style={{ background: '#ffffff', border: '1px solid #e5e7eb', color: '#111827' }}
-                    onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; }}
-                  />
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#9ca3af' }}>
+                      <svg className="w-[16px] h-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="you@company.com" autoComplete="email"
+                      className="w-full h-[46px] pl-10 pr-3.5 rounded-xl text-[14px] outline-none transition-all duration-200"
+                      style={{ background: '#f9fafb', border: '1px solid #e5e7eb', color: '#111827' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; e.currentTarget.style.background = '#ffffff'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = '#f9fafb'; }}
+                    />
+                  </div>
                 </div>
               )}
 
               {/* Password */}
               {mode !== 'forgot' && (
                 <div className="mb-3">
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: '#374151' }}>
+                  <label className="block text-[13px] font-semibold mb-1.5" style={{ color: '#374151' }}>
                     Password
                   </label>
                   <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#9ca3af' }}>
+                      <svg className="w-[16px] h-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                    </div>
                     <input
                       type={showPassword ? 'text' : 'password'} value={password}
                       onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                      className="w-full h-[44px] px-3.5 pr-11 rounded-lg text-[14px] outline-none transition-all duration-200"
-                      style={{ background: '#ffffff', border: '1px solid #e5e7eb', color: '#111827' }}
-                      onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; }}
-                      onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; }}
+                      className="w-full h-[46px] pl-10 pr-11 rounded-xl text-[14px] outline-none transition-all duration-200"
+                      style={{ background: '#f9fafb', border: '1px solid #e5e7eb', color: '#111827' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; e.currentTarget.style.background = '#ffffff'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = '#f9fafb'; }}
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-colors"
@@ -340,7 +358,7 @@ export default function AuthPage() {
                     </button>
                   </div>
 
-                  {/* Password strength meter */}
+                  {/* Password strength */}
                   {showStrength && (
                     <div className="mt-2.5">
                       <div className="flex gap-1 mb-1.5">
@@ -355,7 +373,7 @@ export default function AuthPage() {
 
                   {/* Remember me + Forgot */}
                   {mode === 'login' && (
-                    <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center justify-between mt-4">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <div className="w-[18px] h-[18px] rounded flex items-center justify-center transition-all duration-200"
                           style={{
@@ -374,7 +392,7 @@ export default function AuthPage() {
                         </span>
                       </label>
                       <button type="button" onClick={() => switchMode('forgot')}
-                        className="text-[13px] font-medium transition-colors" style={{ color: '#DC2626' }}>
+                        className="text-[13px] font-medium transition-colors underline underline-offset-2" style={{ color: '#DC2626' }}>
                         Forgot password?
                       </button>
                     </div>
@@ -385,17 +403,24 @@ export default function AuthPage() {
               {/* Confirm password */}
               {(mode === 'signup' || mode === 'reset') && (
                 <div className="mb-5">
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: '#374151' }}>
+                  <label className="block text-[13px] font-semibold mb-1.5" style={{ color: '#374151' }}>
                     Confirm Password
                   </label>
-                  <input type={showPassword ? 'text' : 'password'} value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm your password"
-                    autoComplete="new-password"
-                    className="w-full h-[44px] px-3.5 rounded-lg text-[14px] outline-none transition-all duration-200"
-                    style={{ background: '#ffffff', border: '1px solid #e5e7eb', color: '#111827' }}
-                    onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; }}
-                  />
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#9ca3af' }}>
+                      <svg className="w-[16px] h-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                    </div>
+                    <input type={showPassword ? 'text' : 'password'} value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      className="w-full h-[46px] pl-10 pr-3.5 rounded-xl text-[14px] outline-none transition-all duration-200"
+                      style={{ background: '#f9fafb', border: '1px solid #e5e7eb', color: '#111827' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#DC2626'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.08)'; e.currentTarget.style.background = '#ffffff'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = '#f9fafb'; }}
+                    />
+                  </div>
                   {confirmPassword && password !== confirmPassword && (
                     <p className="text-[11px] mt-1.5 font-medium" style={{ color: '#dc2626' }}>Passwords don't match</p>
                   )}
@@ -404,14 +429,15 @@ export default function AuthPage() {
 
               {/* Submit */}
               <button type="submit" disabled={loading}
-                className="w-full h-[46px] rounded-lg text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-5"
+                className="w-full h-[48px] rounded-xl text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-6"
                 style={{
-                  background: loading ? 'rgba(220,38,38,0.7)' : '#DC2626',
+                  background: loading ? 'rgba(160,30,30,0.7)' : 'linear-gradient(135deg, #DC2626 0%, #991b1b 100%)',
                   color: '#ffffff',
                   cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: loading ? 'none' : '0 4px 14px rgba(220,38,38,0.25)',
                 }}
-                onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#b91c1c'; }}
-                onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#DC2626'; }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(220,38,38,0.35)'; } }}
+                onMouseLeave={e => { if (!loading) { e.currentTarget.style.background = 'linear-gradient(135deg, #DC2626 0%, #991b1b 100%)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(220,38,38,0.25)'; } }}
               >
                 {loading ? (
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -420,7 +446,7 @@ export default function AuthPage() {
                   </svg>
                 ) : (
                   <>
-                    {mode === 'login' && 'Sign In →'}
+                    {mode === 'login' && 'Sign In  →'}
                     {mode === 'signup' && 'Create Account'}
                     {mode === 'forgot' && 'Send Reset Link'}
                     {mode === 'reset' && 'Update Password'}
@@ -429,50 +455,17 @@ export default function AuthPage() {
               </button>
             </form>
 
-            {/* Social login (login only) */}
-            {mode === 'login' && (
-              <>
-                <div className="flex items-center gap-3 my-6">
-                  <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
-                  <span className="text-[12px] font-medium" style={{ color: '#9ca3af' }}>or continue with</span>
-                  <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
-                </div>
-
-                <div className="flex items-center justify-center gap-4">
-                  <button type="button"
-                    className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200"
-                    style={{ background: '#ffffff', border: '1px solid #e5e7eb' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
-                    onClick={() => setError('Social login coming soon!')}>
-                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                  </button>
-                  <button type="button"
-                    className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200"
-                    style={{ background: '#ffffff', border: '1px solid #e5e7eb', color: '#1d1d1f' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
-                    onClick={() => setError('Social login coming soon!')}>
-                    <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.55 4.41-3.74 4.25z"/>
-                    </svg>
-                  </button>
-                </div>
-              </>
-            )}
-
             {/* Mode switch */}
             <div className="mt-7 text-center">
               {mode === 'login' && (
                 <div className="flex flex-col items-center gap-3">
-                  <span className="text-[14px]" style={{ color: '#6b7280' }}>New to Priorix?</span>
+                  <div className="w-full flex items-center gap-3">
+                    <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
+                    <span className="text-[13px]" style={{ color: '#9ca3af' }}>New to Priorix?</span>
+                    <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
+                  </div>
                   <button onClick={() => switchMode('signup')}
-                    className="w-full h-[42px] rounded-lg text-[14px] font-semibold transition-all duration-200"
+                    className="w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200"
                     style={{ border: '1.5px solid #DC2626', color: '#DC2626', background: 'transparent' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.04)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
