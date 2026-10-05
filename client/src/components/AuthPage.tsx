@@ -245,7 +245,7 @@ export default function AuthPage() {
 
         {/* ── Right: floating form card ── */}
         <div className="flex-1 flex items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-[420px] rounded-2xl p-8 md:p-10" style={{
+          <div className="w-full max-w-[420px] rounded-2xl p-6 sm:p-8 md:p-10" style={{
             background: '#ffffff',
             boxShadow: '0 25px 60px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.1)',
           }}>
@@ -373,7 +373,7 @@ export default function AuthPage() {
 
                   {/* Remember me + Forgot */}
                   {mode === 'login' && (
-                    <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center justify-between mt-4 gap-2 flex-wrap">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <div className="w-[18px] h-[18px] rounded flex items-center justify-center transition-all duration-200"
                           style={{
