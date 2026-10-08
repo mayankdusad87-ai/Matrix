@@ -171,27 +171,25 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* ── Background: photo + warm overlays ── */}
+      {/* ── Background: photo + warm golden overlays ── */}
       <div className="absolute inset-0" style={{
         backgroundImage: 'url(/bg-login.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }} />
-      {/* Warm red/amber color overlay */}
+      {/* Warm amber/golden wash — very light, bright daylight */}
       <div className="absolute inset-0" style={{
-        background: 'linear-gradient(135deg, rgba(80,20,10,0.7) 0%, rgba(120,30,15,0.5) 40%, rgba(160,50,20,0.4) 60%, rgba(100,25,10,0.6) 100%)',
+        background: 'linear-gradient(135deg, rgba(240,200,150,0.55) 0%, rgba(245,220,180,0.45) 35%, rgba(250,230,200,0.35) 55%, rgba(220,180,140,0.4) 100%)',
       }} />
-      {/* Red curtain effect on the right */}
+      {/* Deep red curtain on far right */}
       <div className="absolute inset-0" style={{
         background: `
-          linear-gradient(to right, transparent 55%, rgba(140,20,10,0.45) 75%, rgba(120,15,8,0.6) 100%),
-          radial-gradient(ellipse at 20% 80%, rgba(200,120,60,0.15) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 20%, rgba(180,40,20,0.1) 0%, transparent 40%)
+          linear-gradient(to right, transparent 55%, rgba(120,15,8,0.55) 75%, rgba(100,10,5,0.75) 100%)
         `,
       }} />
-      {/* Subtle vignette */}
+      {/* Very subtle edge darkening */}
       <div className="absolute inset-0" style={{
-        background: 'radial-gradient(ellipse at center, transparent 30%, rgba(10,2,2,0.35) 100%)',
+        background: 'radial-gradient(ellipse at 30% 50%, transparent 50%, rgba(80,40,20,0.12) 100%)',
       }} />
 
       {/* ── Content ── */}
@@ -199,43 +197,41 @@ export default function AuthPage() {
 
         {/* ── Left: branding overlaid on background ── */}
         <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-10 xl:p-14">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(220,40,40,0.2)', backdropFilter: 'blur(8px)' }}>
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#ef4444" strokeWidth={2}>
-                <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
-                <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold tracking-[-0.02em] text-white">Priorix</span>
+          {/* Logo — large, bold, dark burgundy */}
+          <div className="flex items-center gap-3">
+            <svg className="w-11 h-11" fill="none" viewBox="0 0 24 24" stroke="#6B1414" strokeWidth={2.2}>
+              <rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="8" rx="1.5" />
+              <rect x="3" y="13" width="8" height="8" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" />
+            </svg>
+            <span className="text-2xl font-extrabold tracking-[-0.02em]" style={{ color: '#3B1010' }}>Priorix</span>
           </div>
 
-          {/* Hero */}
-          <div className="max-w-lg">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(255,200,160,0.7)' }}>
+          {/* Hero — larger, bolder, dark text */}
+          <div className="max-w-xl">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.3em] mb-5" style={{ color: '#8B1A1A' }}>
               Good to see you again
             </p>
-            <h1 className="text-[44px] xl:text-[56px] font-bold leading-[1.05] mb-4 text-white">
+            <h1 className="text-[52px] xl:text-[64px] font-extrabold leading-[1.02] mb-5" style={{ color: '#1A1008' }}>
               Turn effort<br />
-              into <span style={{ color: '#ef4444' }}>impact.</span>
+              into <span style={{ color: '#DC2626' }}>impact.</span>
             </h1>
-            <p className="text-[16px] font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="text-[17px] font-medium tracking-wide" style={{ color: 'rgba(60,40,20,0.55)' }}>
               Prioritise. Execute. Deliver.
             </p>
           </div>
 
-          {/* Feature cards — light frosted glass */}
+          {/* Feature cards — solid white backgrounds, burgundy icons */}
           <div className="flex items-stretch gap-5">
             {features.map((f, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 px-7 py-5 rounded-2xl" style={{
-                background: 'rgba(255,255,255,0.12)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.15)',
+              <div key={i} className="flex flex-col items-center gap-3 px-8 py-5 rounded-2xl" style={{
+                background: 'rgba(255,255,255,0.88)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)', color: '#ef4444' }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,26,26,0.08)', color: '#8B1A1A' }}>
                   {f.icon}
                 </div>
-                <span className="text-[12px] font-medium text-center whitespace-pre-line leading-snug" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                <span className="text-[12px] font-semibold text-center whitespace-pre-line leading-snug" style={{ color: '#4A2010' }}>
                   {f.label}
                 </span>
               </div>
