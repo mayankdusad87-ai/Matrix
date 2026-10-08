@@ -4,55 +4,98 @@ interface Props {
   tasks: Task[];
 }
 
-const QUADRANT_CONFIG = {
-  'Do Now':       { color: '#ef4444', icon: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-  )},
-  'Schedule':     { color: '#3b82f6', icon: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-  )},
-  'Delegate':     { color: '#f59e0b', icon: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-  )},
-  'Deprioritize': { color: '#9ca3af', icon: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-  )},
-} as const;
+function DonutChart({ segments, size = 140, stroke = 16 }: { segments: { label: string; value: number; color: string }[]; size?: number; stroke?: number }) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  if (total === 0) {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={(size - stroke) / 2} fill="none" stroke="var(--bg-inset)" strokeWidth={stroke} />
+        <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize="24" fontWeight="700" fill="var(--text-quaternary)">—</text>
+      </svg>
+    );
+  }
+  const r = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bg-inset)" strokeWidth={stroke} />
+      {segments.filter(s => s.value > 0).map((seg) => {
+        const pct = seg.value / total;
+        const dash = pct * circumference;
+        const gap = circumference - dash;
+        const el = (
+          <circle
+            key={seg.label}
+            cx={size / 2} cy={size / 2} r={r}
+            fill="none" stroke={seg.color} strokeWidth={stroke}
+            strokeDasharray={`${dash} ${gap}`}
+            strokeDashoffset={-offset}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease' }}
+          />
+        );
+        offset += dash;
+        return el;
+      })}
+    </svg>
+  );
+}
+
+function DonutCard({ title, segments, centerLabel, centerValue }: {
+  title: string;
+  segments: { label: string; value: number; color: string }[];
+  centerLabel: string;
+  centerValue: string;
+}) {
+  return (
+    <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-tertiary)' }}>{title}</h3>
+      <div className="flex items-center gap-6">
+        <div className="relative shrink-0">
+          <DonutChart segments={segments} size={140} stroke={16} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-[22px] font-bold tabular-nums leading-none" style={{ color: 'var(--text-primary)' }}>{centerValue}</span>
+            <span className="text-[10px] mt-1 font-medium" style={{ color: 'var(--text-tertiary)' }}>{centerLabel}</span>
+          </div>
+        </div>
+        <div className="flex-1 space-y-2.5 min-w-0">
+          {segments.map(seg => (
+            <div key={seg.label} className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color }} />
+              <span className="text-[13px] font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{seg.label}</span>
+              <span className="ml-auto text-[13px] font-bold tabular-nums shrink-0" style={{ color: 'var(--text-primary)' }}>{seg.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Analytics({ tasks }: Props) {
   const total = tasks.length;
+
   if (total === 0) {
     return (
       <div className="flex-1 overflow-auto p-5 md:p-8 scrollbar-thin">
         <div className="max-w-5xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Analytics</h1>
-            <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Execution Overview</h1>
+            <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               Understand where your time and attention are going.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {[
-              { title: 'Completion', subtitle: 'Completion trend over time' },
-              { title: 'Priority Mix', subtitle: 'Distribution across quadrants' },
-              { title: 'Execution', subtitle: 'Tasks completed this period' },
-            ].map(card => (
-              <div key={card.title} className="rounded-xl p-6 text-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center" style={{ background: 'var(--bg-inset)' }}>
-                  <svg className="w-6 h-6" style={{ color: 'var(--text-quaternary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    {card.title === 'Completion' && <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
-                    {card.title === 'Priority Mix' && <><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></>}
-                    {card.title === 'Execution' && <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />}
-                  </svg>
-                </div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>{card.title}</p>
-                <p className="text-3xl font-bold mb-1" style={{ color: 'var(--text-quaternary)' }}>{'—'}</p>
-                <p className="text-[11px]" style={{ color: 'var(--text-quaternary)' }}>{card.subtitle}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center py-8">
-            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Add tasks to see your analytics come to life.</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center"
+              style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-muted)' }}>
+              <svg className="w-8 h-8" style={{ color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p className="text-base font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>No data yet</p>
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>Add tasks to see your execution overview.</p>
           </div>
         </div>
       </div>
@@ -65,163 +108,113 @@ export default function Analytics({ tasks }: Props) {
   const statusCounts: Record<string, number> = {};
   tasks.forEach(t => { statusCounts[t.status] = (statusCounts[t.status] || 0) + 1; });
 
-  const approachingUrgency = tasks
-    .filter(t => t.quadrant === 'Schedule' && t.daysRemaining <= 14 && t.daysRemaining > 7)
-    .sort((a, b) => a.daysRemaining - b.daysRemaining);
-
-  const recentlyUrgent = tasks
-    .filter(t => t.quadrant === 'Do Now' && t.daysRemaining >= 0 && t.daysRemaining <= 7)
-    .sort((a, b) => a.daysRemaining - b.daysRemaining);
-
-  const overdueTasks = tasks
-    .filter(t => t.isOverdue && t.status !== 'Completed')
-    .sort((a, b) => a.daysRemaining - b.daysRemaining);
-
-  const completed = tasks.filter(t => t.status === 'Completed').length;
+  const completed = statusCounts['Completed'] || 0;
+  const inProgress = statusCounts['In Progress'] || 0;
   const completionRate = Math.round((completed / total) * 100);
+
+  const overdueTasks = tasks.filter(t => t.isOverdue && t.status !== 'Completed').sort((a, b) => a.daysRemaining - b.daysRemaining);
+  const approachingUrgency = tasks.filter(t => t.quadrant === 'Schedule' && t.daysRemaining <= 14 && t.daysRemaining > 7).sort((a, b) => a.daysRemaining - b.daysRemaining);
+  const recentlyUrgent = tasks.filter(t => t.quadrant === 'Do Now' && t.daysRemaining >= 0 && t.daysRemaining <= 7).sort((a, b) => a.daysRemaining - b.daysRemaining);
 
   const activeTasks = tasks.filter(t => t.status !== 'Completed');
   const avgProgress = activeTasks.length > 0
     ? Math.round(activeTasks.reduce((sum, t) => sum + (t.timelineProgress || 0), 0) / activeTasks.length) : 0;
 
+  const quadrantSegments = [
+    { label: 'Do Now', value: quadrantCounts['Do Now'], color: '#ef4444' },
+    { label: 'Schedule', value: quadrantCounts['Schedule'], color: '#3b82f6' },
+    { label: 'Delegate', value: quadrantCounts['Delegate'], color: '#f59e0b' },
+    { label: 'Deprioritize', value: quadrantCounts['Deprioritize'], color: '#9ca3af' },
+  ];
+
+  const statusSegments = [
+    { label: 'Completed', value: completed, color: '#10b981' },
+    { label: 'In Progress', value: inProgress, color: '#3b82f6' },
+    { label: 'Not Started', value: statusCounts['Not Started'] || 0, color: '#9ca3af' },
+    { label: 'On Hold', value: statusCounts['On Hold'] || 0, color: '#f59e0b' },
+  ];
+
   return (
     <div className="flex-1 overflow-auto p-5 md:p-8 scrollbar-thin">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-5">
+        {/* Header */}
         <div>
-          <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Analytics</h1>
-          <p className="text-[14px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+          <h1 className="text-[22px] md:text-[26px] font-bold" style={{ color: 'var(--text-primary)' }}>Execution Overview</h1>
+          <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
             Understand where your time and attention are going.
           </p>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <SummaryCard label="Completion Rate" value={`${completionRate}%`} sublabel={`${completed} of ${total} tasks`} accent="#10b981" />
-          <SummaryCard label="Avg Timeline Used" value={`${avgProgress}%`} sublabel={`${activeTasks.length} active tasks`} accent="#3b82f6" />
-          <SummaryCard label="Overdue" value={String(overdueTasks.length)} sublabel={overdueTasks.length > 0 ? 'Need attention' : 'All clear'} accent="#ef4444" />
-          <SummaryCard label="Approaching Urgent" value={String(approachingUrgency.length)} sublabel="Will need action soon" accent="#f97316" />
+        {/* Compact inline stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Completion', value: `${completionRate}%`, sub: `${completed} of ${total}`, color: '#10b981' },
+            { label: 'Active', value: String(inProgress), sub: `${activeTasks.length} remaining`, color: '#3b82f6' },
+            { label: 'Overdue', value: String(overdueTasks.length), sub: overdueTasks.length > 0 ? 'Need attention' : 'All clear', color: '#ef4444' },
+            { label: 'Avg Progress', value: `${avgProgress}%`, sub: 'Timeline used', color: '#f59e0b' },
+          ].map(({ label, value, sub, color }) => (
+            <div key={label} className="rounded-xl px-4 py-3.5 flex items-center gap-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}10` }}>
+                <span className="text-[16px] font-bold tabular-nums" style={{ color }}>{value}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+                <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--text-quaternary)' }}>{sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Quadrant distribution */}
-        <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-tertiary)' }}>
-            Quadrant Distribution
-          </h3>
-          <div className="space-y-4">
-            {Object.entries(QUADRANT_CONFIG).map(([quadrant, cfg]) => {
-              const count = quadrantCounts[quadrant] || 0;
-              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-              return (
-                <div key={quadrant} className="flex items-center gap-3">
-                  <span className="w-5 shrink-0" style={{ color: cfg.color }}>{cfg.icon}</span>
-                  <span className="text-sm font-medium w-28 shrink-0" style={{ color: 'var(--text-secondary)' }}>{quadrant}</span>
-                  <div className="flex-1 h-7 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-                      style={{ width: `${Math.max(pct, 3)}%`, background: cfg.color }}
-                    >
-                      {pct >= 15 && <span className="text-white text-[10px] font-bold">{pct}%</span>}
-                    </div>
-                  </div>
-                  <span className="text-sm font-semibold w-16 text-right tabular-nums" style={{ color: 'var(--text-secondary)' }}>{count} tasks</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Status distribution */}
-        <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-tertiary)' }}>
-            Status Distribution
-          </h3>
-          <div className="space-y-3">
-            {[
-              { status: 'Completed', color: '#10b981', count: statusCounts['Completed'] || 0 },
-              { status: 'In Progress', color: '#3b82f6', count: statusCounts['In Progress'] || 0 },
-              { status: 'Not Started', color: '#9ca3af', count: statusCounts['Not Started'] || 0 },
-              { status: 'On Hold', color: '#f59e0b', count: statusCounts['On Hold'] || 0 },
-            ].map(({ status, color, count }) => {
-              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-              return (
-                <div key={status} className="flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                  <span className="text-sm font-medium w-24 shrink-0" style={{ color: 'var(--text-secondary)' }}>{status}</span>
-                  <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-                      style={{ width: `${Math.max(pct, 2)}%`, background: color, opacity: 0.8 }}
-                    >
-                      {pct >= 15 && <span className="text-white text-[10px] font-bold">{pct}%</span>}
-                    </div>
-                  </div>
-                  <span className="text-sm font-semibold w-8 text-right tabular-nums" style={{ color: 'var(--text-secondary)' }}>{count}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
+        {/* Donut charts side by side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Approaching urgency */}
-          <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
-              Approaching Urgency
-            </h3>
-            <p className="text-[11px] mb-3" style={{ color: 'var(--text-quaternary)' }}>Schedule tasks moving to Do Now within 7 days</p>
-            {approachingUrgency.length === 0 ? (
-              <p className="text-sm italic" style={{ color: 'var(--text-tertiary)' }}>No tasks approaching urgency</p>
-            ) : (
-              <div className="space-y-1.5">
-                {approachingUrgency.map(t => (
-                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(249,115,22,0.05)' }}>
-                    <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
-                    <span className="text-xs font-bold shrink-0 ml-2" style={{ color: '#f97316' }}>
-                      {t.daysRemaining - 7}d to urgent
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <DonutCard
+            title="Priority Distribution"
+            segments={quadrantSegments}
+            centerValue={String(total)}
+            centerLabel="total"
+          />
+          <DonutCard
+            title="Status Breakdown"
+            segments={statusSegments}
+            centerValue={`${completionRate}%`}
+            centerLabel="done"
+          />
+        </div>
 
-          {/* Now urgent */}
-          <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
-              Now Urgent
-            </h3>
-            <p className="text-[11px] mb-3" style={{ color: 'var(--text-quaternary)' }}>Tasks that crossed into Do Now (≤ 7 days left)</p>
-            {recentlyUrgent.length === 0 ? (
-              <p className="text-sm italic" style={{ color: 'var(--text-tertiary)' }}>No urgent tasks right now</p>
-            ) : (
-              <div className="space-y-1.5">
-                {recentlyUrgent.map(t => (
-                  <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.05)' }}>
-                    <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
-                    <span className="text-xs font-bold shrink-0 ml-2" style={{ color: '#ef4444' }}>
-                      {t.daysRemaining === 0 ? 'Due today!' : `${t.daysRemaining}d left`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Attention lists */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AttentionList
+            title="Approaching Urgency"
+            subtitle="Schedule tasks nearing Do Now"
+            items={approachingUrgency}
+            color="#f97316"
+            renderRight={t => `${t.daysRemaining - 7}d to urgent`}
+            empty="No tasks approaching urgency"
+          />
+          <AttentionList
+            title="Now Urgent"
+            subtitle="Do Now tasks with ≤ 7 days left"
+            items={recentlyUrgent}
+            color="#ef4444"
+            renderRight={t => t.daysRemaining === 0 ? 'Due today!' : `${t.daysRemaining}d left`}
+            empty="No urgent tasks right now"
+          />
         </div>
 
         {/* Overdue */}
         {overdueTasks.length > 0 && (
           <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid rgba(239,68,68,0.2)' }}>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#ef4444' }}>
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#ef4444' }}>
               Overdue Tasks
             </h3>
             <div className="space-y-1.5">
               {overdueTasks.map(t => (
-                <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.04)' }}>
+                <div key={t.id} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.04)' }}>
                   <div className="truncate">
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
-                    <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>Due: {t.dueDate}</span>
+                    <span className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
+                    <span className="text-[11px] ml-2" style={{ color: 'var(--text-tertiary)' }}>Due: {t.dueDate}</span>
                   </div>
-                  <span className="text-xs font-bold shrink-0 ml-2" style={{ color: '#ef4444' }}>
+                  <span className="text-[11px] font-bold shrink-0 ml-2" style={{ color: '#ef4444' }}>
                     {Math.abs(t.daysRemaining)}d late
                   </span>
                 </div>
@@ -229,18 +222,31 @@ export default function Analytics({ tasks }: Props) {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
 }
 
-function SummaryCard({ label, value, sublabel, accent }: { label: string; value: string; sublabel: string; accent: string }) {
+function AttentionList({ title, subtitle, items, color, renderRight, empty }: {
+  title: string; subtitle: string; items: Task[]; color: string;
+  renderRight: (t: Task) => string; empty: string;
+}) {
   return (
-    <div className="rounded-xl p-4 md:p-5" style={{ background: `${accent}08`, border: `1px solid ${accent}15`, boxShadow: `0 0 20px ${accent}10` }}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
-      <p className="text-3xl md:text-4xl font-bold tabular-nums mt-1.5" style={{ color: accent }}>{value}</p>
-      <p className="text-[11px] mt-1" style={{ color: 'var(--text-tertiary)' }}>{sublabel}</p>
+    <div className="rounded-xl p-5 md:p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-tertiary)' }}>{title}</h3>
+      <p className="text-[11px] mb-3" style={{ color: 'var(--text-quaternary)' }}>{subtitle}</p>
+      {items.length === 0 ? (
+        <p className="text-[13px] italic" style={{ color: 'var(--text-tertiary)' }}>{empty}</p>
+      ) : (
+        <div className="space-y-1.5">
+          {items.map(t => (
+            <div key={t.id} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: `${color}08` }}>
+              <span className="text-[13px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{t.title}</span>
+              <span className="text-[11px] font-bold shrink-0 ml-2" style={{ color }}>{renderRight(t)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

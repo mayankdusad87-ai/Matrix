@@ -204,48 +204,62 @@ export default function TaskPanel({ task, allTasks, onClose, onUpdate, onDelete 
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 flex gap-2 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="px-6 py-4 flex flex-col gap-2 shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
           {!editing ? (
             <>
-              <button onClick={() => setEditing(true)}
-                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
-                style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                Edit
-              </button>
-              <button onClick={handleSave}
-                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
-                style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: '0 0 12px rgba(139,26,26,0.15)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
-                Save Changes
-              </button>
-              <button onClick={() => onDelete(task.id)}
-                className="rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
-                style={{ border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                Delete
-              </button>
+              {status !== 'Completed' && (
+                <button onClick={async () => { setStatus('Completed'); await onUpdate(task.id, { status: 'Completed' }); }}
+                  className="w-full rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150 flex items-center justify-center gap-2"
+                  style={{ background: '#10b981', color: '#ffffff' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#059669')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#10b981')}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Mark Complete
+                </button>
+              )}
+              <div className="flex gap-2">
+                <button onClick={() => setEditing(true)}
+                  className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  Edit
+                </button>
+                <button onClick={handleSave}
+                  className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150"
+                  style={{ background: 'var(--accent)', color: '#ffffff' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
+                  Save Changes
+                </button>
+                <button onClick={() => onDelete(task.id)}
+                  className="rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                  style={{ border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  Delete
+                </button>
+              </div>
             </>
           ) : (
-            <>
+            <div className="flex gap-2">
               <button onClick={() => setEditing(false)}
-                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-medium transition-all duration-150"
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                 Cancel
               </button>
               <button onClick={handleSave}
-                className="flex-1 rounded-lg px-3 py-3 text-[13px] font-semibold transition-all duration-150"
-                style={{ background: 'var(--accent)', color: '#ffffff', boxShadow: '0 0 12px rgba(139,26,26,0.15)' }}
+                className="flex-1 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-150"
+                style={{ background: 'var(--accent)', color: '#ffffff' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}>
                 Save
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

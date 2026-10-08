@@ -12,14 +12,12 @@ interface Props {
   offsetY?: number;
 }
 
-const QUADRANT_COLORS = {
-  'Do Now':       { accent: '#ef4444', bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.20)', darkBg: 'rgba(239,68,68,0.10)', darkBorder: 'rgba(239,68,68,0.25)' },
-  'Schedule':     { accent: '#3b82f6', bg: 'rgba(59,130,246,0.06)', border: 'rgba(59,130,246,0.20)', darkBg: 'rgba(59,130,246,0.10)', darkBorder: 'rgba(59,130,246,0.25)' },
-  'Delegate':     { accent: '#f59e0b', bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.20)', darkBg: 'rgba(245,158,11,0.10)', darkBorder: 'rgba(245,158,11,0.25)' },
-  'Deprioritize': { accent: '#9ca3af', bg: 'rgba(156,163,175,0.06)', border: 'rgba(156,163,175,0.15)', darkBg: 'rgba(156,163,175,0.08)', darkBorder: 'rgba(156,163,175,0.15)' },
-} as const;
-
-const OVERDUE_COLORS = { accent: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.30)', darkBg: 'rgba(239,68,68,0.15)', darkBorder: 'rgba(239,68,68,0.35)' };
+const QUADRANT_ACCENT: Record<string, string> = {
+  'Do Now': '#ef4444',
+  'Schedule': '#3b82f6',
+  'Delegate': '#f59e0b',
+  'Deprioritize': '#9ca3af',
+};
 
 const TOOLTIP_W = 240;
 const TOOLTIP_H = 180;
@@ -30,7 +28,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number; above: boolean } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const isDark = document.documentElement.classList.contains('dark');
-  const colors = task.isOverdue ? OVERDUE_COLORS : (QUADRANT_COLORS[task.quadrant as keyof typeof QUADRANT_COLORS] ?? QUADRANT_COLORS['Deprioritize']);
+  const accent = task.isOverdue ? '#ef4444' : (QUADRANT_ACCENT[task.quadrant] ?? '#9ca3af');
 
   const PADDING = 5;
   const xPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PADDING * 2) + offsetX));
@@ -84,53 +82,45 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         onClick={() => onClick(task)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="absolute -translate-x-1/2 translate-y-1/2 w-[80px] md:w-[120px] rounded-lg md:rounded-xl
-          px-1.5 md:px-2 py-1 md:py-1.5 cursor-pointer select-none z-10"
+        className="absolute -translate-x-1/2 translate-y-1/2 w-[100px] md:w-[150px] rounded-lg md:rounded-xl
+          p-2 md:p-3 cursor-pointer select-none z-10 transition-shadow duration-200"
         style={{
           willChange: 'left, bottom',
-          background: isDark ? colors.darkBg : colors.bg,
-          border: `1px solid ${isDark ? colors.darkBorder : colors.border}`,
-          backdropFilter: 'blur(8px)',
-          boxShadow: 'var(--shadow-sm)',
+          background: 'var(--bg-surface)',
+          border: `1px solid var(--border)`,
+          borderLeft: `3px solid ${accent}`,
+          boxShadow: 'var(--shadow-md)',
         }}
-        whileHover={{ scale: 1.15, zIndex: 50 }}
+        whileHover={{ scale: 1.06, zIndex: 50 }}
       >
-        {/* Badge */}
-        <div className="flex items-center gap-0.5 mb-px md:mb-0.5">
+        {/* Quadrant badge + arrow */}
+        <div className="flex items-center justify-between mb-1 md:mb-1.5">
           <span
-            className="text-[6px] md:text-[8px] font-bold uppercase tracking-wider px-0.5 md:px-1 py-px rounded-sm leading-none text-white truncate"
-            style={{ background: colors.accent }}
+            className="text-[6px] md:text-[8px] font-bold uppercase tracking-wider px-1 md:px-1.5 py-0.5 rounded text-white leading-none"
+            style={{ background: accent }}
           >
-            {task.isOverdue ? '⚠ LATE' : task.quadrant}
+            {task.isOverdue ? 'OVERDUE' : task.quadrant}
           </span>
+          <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+          </svg>
         </div>
 
         {/* Title */}
-        <div className="text-[8px] md:text-[10px] font-semibold truncate leading-tight" style={{ color: 'var(--text-primary)' }}>
+        <div className="text-[9px] md:text-[12px] font-semibold leading-tight mb-1 md:mb-1.5 line-clamp-2"
+          style={{ color: 'var(--text-primary)' }}>
           {task.title}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-px md:mt-0.5">
-          <span className="text-[7px] md:text-[8px] font-semibold" style={{ color: urgencyColor }}>
-            {task.daysRemaining < 0 ? `${Math.abs(task.daysRemaining)}d late` : task.daysRemaining === 0 ? 'Today' : `${task.daysRemaining}d`}
+        {/* Due + importance */}
+        <div className="flex items-center justify-between">
+          <span className="text-[7px] md:text-[10px] font-semibold" style={{ color: urgencyColor }}>
+            {task.daysRemaining < 0 ? `${Math.abs(task.daysRemaining)}d late` : task.daysRemaining === 0 ? 'Due today' : `Due in ${task.daysRemaining}d`}
           </span>
-          <span className="text-[7px] md:text-[8px] font-medium px-0.5 md:px-1 rounded-sm tabular-nums" style={{ color: 'var(--text-secondary)', background: 'var(--bg-inset)' }}>
+          <span className="text-[8px] md:text-[11px] font-bold tabular-nums"
+            style={{ color: 'var(--text-secondary)' }}>
             {task.importanceScore}
           </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mt-0.5 h-[2px] rounded-full overflow-hidden" style={{ background: 'var(--bg-inset)' }}>
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${task.timelineProgress ?? 0}%`,
-              background: (task.timelineProgress ?? 0) >= 90 ? '#ef4444'
-                : (task.timelineProgress ?? 0) >= 70 ? '#f97316'
-                : (task.timelineProgress ?? 0) >= 40 ? '#f59e0b' : '#10b981',
-            }}
-          />
         </div>
       </motion.div>
 
@@ -160,7 +150,6 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                   boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 1px rgba(139,26,26,0.1)',
                 }}
               >
-                {/* Arrow */}
                 <div
                   className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45"
                   style={{
@@ -168,9 +157,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                     background: isDark ? '#181818' : '#1a1d26',
                   }}
                 />
-
                 <p className="text-[13px] font-bold mb-2 leading-tight">{task.title}</p>
-
                 <div className="space-y-1.5 text-[11px]">
                   {[
                     { label: 'Quadrant', value: task.isOverdue ? 'Overdue' : task.quadrant },
@@ -184,8 +171,6 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                       <span className="font-semibold tabular-nums" style={color ? { color } : undefined}>{value}</span>
                     </div>
                   ))}
-
-                  {/* Progress */}
                   <div className="flex justify-between items-center">
                     <span className="opacity-40">Progress</span>
                     <div className="flex items-center gap-1.5">
@@ -202,7 +187,6 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
                     </div>
                   </div>
                 </div>
-
                 <div className="mt-2.5 pt-2 text-[9px] opacity-30 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                   Click to edit · Drag ↕ importance
                 </div>

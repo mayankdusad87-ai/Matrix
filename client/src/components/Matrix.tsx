@@ -470,7 +470,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 {/* Do Now - top right */}
                 <div className="absolute top-3 md:top-4" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
                   <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                    style={{ color: 'rgba(239,68,68,0.7)', background: 'rgba(239,68,68,0.04)' }}>
+                    style={{ color: 'rgba(239,68,68,0.85)', background: 'rgba(239,68,68,0.06)' }}>
                     Do Now
                   </span>
                   <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
@@ -480,7 +480,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 {/* Schedule - top left */}
                 <div className="absolute top-3 md:top-4 left-3 md:left-4">
                   <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                    style={{ color: 'rgba(59,130,246,0.7)', background: 'rgba(59,130,246,0.04)' }}>
+                    style={{ color: 'rgba(59,130,246,0.85)', background: 'rgba(59,130,246,0.06)' }}>
                     Schedule
                   </span>
                   <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
@@ -490,7 +490,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 {/* Delegate - bottom right */}
                 <div className="absolute bottom-3 md:bottom-4" style={{ right: `calc(${urgW} - 4px)`, transform: 'translateX(100%)' }}>
                   <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                    style={{ color: 'rgba(245,158,11,0.7)', background: 'rgba(245,158,11,0.04)' }}>
+                    style={{ color: 'rgba(245,158,11,0.85)', background: 'rgba(245,158,11,0.06)' }}>
                     Delegate
                   </span>
                   <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
@@ -500,7 +500,7 @@ export default function Matrix({ tasks, onTaskClick, onImportanceChange, matrixS
                 {/* Deprioritize - bottom left */}
                 <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4">
                   <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                    style={{ color: 'rgba(156,163,175,0.6)', background: 'rgba(156,163,175,0.03)' }}>
+                    style={{ color: 'rgba(156,163,175,0.8)', background: 'rgba(156,163,175,0.05)' }}>
                     Deprioritize
                   </span>
                   <span className="block text-[8px] md:text-[9px] mt-0.5 ml-2" style={{ color: 'var(--text-quaternary)' }}>
