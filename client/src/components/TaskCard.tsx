@@ -30,9 +30,11 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
   const isDark = document.documentElement.classList.contains('dark');
   const accent = task.isOverdue ? '#ef4444' : (QUADRANT_ACCENT[task.quadrant] ?? '#9ca3af');
 
-  const PADDING = 5;
-  const xPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PADDING * 2) + offsetX));
-  const yPct = Math.min(95, Math.max(2, PADDING + (Math.min(100, Math.max(0, task.y)) / 100) * (100 - PADDING * 2) + offsetY));
+  const PAD_L = 8;
+  const PAD_R = 14;
+  const PAD_Y = 5;
+  const xPct = Math.min(100 - PAD_R, Math.max(PAD_L, PAD_L + (Math.min(100, Math.max(0, task.x)) / 100) * (100 - PAD_L - PAD_R) + offsetX));
+  const yPct = Math.min(95, Math.max(PAD_Y, PAD_Y + (Math.min(100, Math.max(0, task.y)) / 100) * (100 - PAD_Y * 2) + offsetY));
 
   const daysLabel = task.daysRemaining < 0
     ? `${Math.abs(task.daysRemaining)}d overdue`
@@ -69,7 +71,7 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
         ref={cardRef}
         initial={false}
         animate={{ left: `${xPct}%`, bottom: `${yPct}%` }}
-        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20, scale: { type: 'tween', duration: 0.15 } }}
         drag="y"
         dragConstraints={{ top: -containerHeight, bottom: 0 }}
         dragElastic={0.1}
@@ -80,18 +82,18 @@ export default function TaskCard({ task, onClick, onDragEnd, containerHeight, of
           if (newImportance !== task.importanceScore) onDragEnd(task, newImportance);
         }}
         onClick={() => onClick(task)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onHoverStart={() => setHovered(true)}
+        onHoverEnd={() => setHovered(false)}
         className="absolute -translate-x-1/2 translate-y-1/2 w-[100px] md:w-[150px] rounded-lg md:rounded-xl
-          p-2 md:p-3 cursor-pointer select-none z-10 transition-shadow duration-200"
+          p-2 md:p-3 cursor-pointer select-none z-10"
         style={{
           willChange: 'left, bottom',
           background: 'var(--bg-surface)',
           border: `1px solid var(--border)`,
           borderLeft: `3px solid ${accent}`,
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: hovered ? 'var(--shadow-lg)' : 'var(--shadow-md)',
         }}
-        whileHover={{ scale: 1.06, zIndex: 50 }}
+        whileHover={{ scale: 1.04, zIndex: 50 }}
       >
         {/* Quadrant badge + arrow */}
         <div className="flex items-center justify-between mb-1 md:mb-1.5">
